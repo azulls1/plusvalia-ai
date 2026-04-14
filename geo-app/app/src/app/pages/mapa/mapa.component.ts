@@ -3,8 +3,10 @@ import { Component, OnInit, OnDestroy } from '@angular/core'; // decoradores de 
 import { CommonModule } from '@angular/common'; // módulo común para directivas básicas
 import { FormsModule } from '@angular/forms'; // módulo para ngModel y formularios
 import { RouterModule } from '@angular/router'; // módulo de rutas para routerLink
-import * as L from 'leaflet'; // librería Leaflet para mapas
-import './leaflet-extensions'; // importa extensiones de Leaflet (heat y markercluster)
+// Leaflet + plugins loaded as global scripts via angular.json (not ESM).
+// This ensures heatLayer/markerClusterGroup attach to the same L instance.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare const L: any;
 import { ApiService } from '../../services/api.service'; // servicio API
 import { MapStateService } from '../../services/map-state.service'; // servicio de estado del mapa
 import { AnalyticsService } from '../../services/analytics.service'; // servicio de analytics
@@ -15,11 +17,6 @@ import { AdvancedFiltersComponent, AdvancedFilters } from '../../components/adva
 import { FileUploadComponent } from '../../components/file-upload/file-upload.component'; // componente de subida de archivos
 import { Tile, Amenity, HeatmapPoint, CityStats, AmenityFilters } from '../../models/interfaces'; // interfaces tipadas
 
-// Declaración de tipos para extensiones de Leaflet (complementa src/types/*.d.ts)
-declare module 'leaflet' {
-  function heatLayer(latlngs: [number, number, number][], options?: HeatMapOptions): HeatLayer;
-  function markerClusterGroup(options?: MarkerClusterGroupOptions): MarkerClusterGroup;
-}
 
 // Lista de los 32 estados de México (shared constant)
 const MEXICAN_STATES: string[] = [
@@ -39,13 +36,13 @@ const MEXICAN_STATES: string[] = [
     styleUrls: ['./mapa.component.css'] // ruta de estilos CSS
 })
 export class MapaComponent implements OnInit, OnDestroy { // clase del componente implementa OnInit, OnDestroy
-  private map!: L.Map; // instancia del mapa Leaflet
-  private heatLayer!: L.HeatLayer; // capa de heatmap de tiles (modo precios)
-  private markersLayer!: L.MarkerClusterGroup; // grupo de clusters de marcadores
-  private predictionsMarkersLayer!: L.LayerGroup; // capa de circle markers para predicciones
-  private statesLayer!: L.GeoJSON; // capa GeoJSON de estados mexicanos
-  private searchMarker: L.Marker | null = null; // marcador de búsqueda
-  private legendControl: L.Control | null = null; // control de leyenda del mapa
+  private map: any;
+  private heatLayer: any;
+  private markersLayer: any;
+  private predictionsMarkersLayer: any;
+  private statesLayer: any;
+  private searchMarker: any = null;
+  private legendControl: any = null;
   private statesGeoData: GeoJSON.FeatureCollection | null = null; // datos GeoJSON cacheados
 
   // Single source of truth for map interaction mode
@@ -182,7 +179,7 @@ export class MapaComponent implements OnInit, OnDestroy { // clase del component
 
       this.statesLayer = L.geoJSON(this.statesGeoData, {
         style: () => this.getEmptyStateStyle(),
-        onEachFeature: (feature, layer) => {
+        onEachFeature: (feature: any, layer: any) => {
           const stateName = feature.properties?.['name'] || 'Estado';
           const stateId = feature.properties?.['id'] || feature.properties?.['name'] || '';
 
@@ -221,7 +218,7 @@ export class MapaComponent implements OnInit, OnDestroy { // clase del component
           });
 
           // --- CLICK: transition to state mode ---
-          layer.on('click', (e) => {
+          layer.on('click', (e: any) => {
             L.DomEvent.stopPropagation(e);
             this.selectState(feature, layer as L.Path);
           });
@@ -322,8 +319,8 @@ export class MapaComponent implements OnInit, OnDestroy { // clase del component
 
       // 2. Make ALL state fills transparent (white base map shows through)
       if (this.statesLayer) {
-        this.statesLayer.eachLayer((l) => {
-          (l as L.Path).setStyle({
+        this.statesLayer.eachLayer((l: any) => {
+          (l as any).setStyle({
             fillColor: 'transparent',
             fillOpacity: 0,
             color: '#cbd5e1',
@@ -378,11 +375,10 @@ export class MapaComponent implements OnInit, OnDestroy { // clase del component
 
         // Aplicar estilo a cada layer individualmente (más confiable que setStyle con función)
         if (this.statesLayer) {
-          this.statesLayer.eachLayer((layer) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const feature = (layer as any).feature as GeoJSON.Feature;
+          this.statesLayer.eachLayer((layer: any) => {
+            const feature = layer.feature as GeoJSON.Feature;
             if (feature) {
-              (layer as L.Path).setStyle(this.getChoroplethStyle(feature));
+              layer.setStyle(this.getChoroplethStyle(feature));
             }
           });
         }
@@ -396,11 +392,10 @@ export class MapaComponent implements OnInit, OnDestroy { // clase del component
   // Aplica estilos coropléticos a cada layer individualmente
   private applyChoroplethStyles(): void {
     if (!this.statesLayer) return;
-    this.statesLayer.eachLayer((layer) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const feature = (layer as any).feature as GeoJSON.Feature;
+    this.statesLayer.eachLayer((layer: any) => {
+      const feature = layer.feature as GeoJSON.Feature;
       if (feature) {
-        (layer as L.Path).setStyle(this.getChoroplethStyle(feature));
+        layer.setStyle(this.getChoroplethStyle(feature));
       }
     });
   }
