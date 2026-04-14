@@ -1,0 +1,203 @@
+# ================================================================
+# Plusvalia AI — Docker Swarm Stack
+# ================================================================
+# Deploy: docker stack deploy -c plusvalia-ai.yaml plusvalia-ai
+# ================================================================
+
+version: "3.8"
+
+services:
+  # ==============================================================
+  # Frontend — Angular + Nginx
+  # ==============================================================
+  frontend:
+    image: plusvalia-ai-frontend:latest
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    networks:
+      - iagenteknet
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.plusvalia-frontend.rule=Host(`plusvalia.iagentek.com.mx`)"
+        - "traefik.http.routers.plusvalia-frontend.entrypoints=websecure"
+        - "traefik.http.routers.plusvalia-frontend.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.plusvalia-frontend.loadbalancer.server.port=80"
+        - "traefik.docker.network=iagenteknet"
+
+  # ==============================================================
+  # Backend — FastAPI + ML
+  # ==============================================================
+  backend:
+    image: plusvalia-ai-backend:latest
+    build:
+      context: ./python_services
+      dockerfile: Dockerfile
+    env_file:
+      - ./python_services/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - API_WORKERS=4
+      - LOG_LEVEL=INFO
+    networks:
+      - iagenteknet
+      - internal
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: "2"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.plusvalia-api.rule=Host(`plusvalia-api.iagentek.com.mx`)"
+        - "traefik.http.routers.plusvalia-api.entrypoints=websecure"
+        - "traefik.http.routers.plusvalia-api.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.plusvalia-api.loadbalancer.server.port=8000"
+        - "traefik.docker.network=iagenteknet"
+        # CORS middleware
+        - "traefik.http.middlewares.plusvalia-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS"
+        - "traefik.http.middlewares.plusvalia-cors.headers.accesscontrolallowheaders=Content-Type,Authorization,X-API-Key"
+        - "traefik.http.middlewares.plusvalia-cors.headers.accesscontrolalloworiginlist=https://plusvalia.iagentek.com.mx"
+        - "traefik.http.middlewares.plusvalia-cors.headers.accesscontrolmaxage=3600"
+        - "traefik.http.routers.plusvalia-api.middlewares=plusvalia-cors"
+
+  # ==============================================================
+  # Redis — Cache + Celery Broker
+  # ==============================================================
+  redis:
+    image: redis:7-alpine
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - internal
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # ==============================================================
+  # Celery Worker — ML Training + Enrichment
+  # ==============================================================
+  celery-worker:
+    image: plusvalia-ai-backend:latest
+    command: celery -A celery_app worker --loglevel=info --pool=solo -Q default,ml,enrichment --concurrency=2
+    env_file:
+      - ./python_services/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - LOG_LEVEL=INFO
+    networks:
+      - internal
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: "1"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+
+  # ==============================================================
+  # Celery Beat — Scheduled Tasks
+  # ==============================================================
+  celery-beat:
+    image: plusvalia-ai-backend:latest
+    command: celery -A celery_app beat --loglevel=info
+    env_file:
+      - ./python_services/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+    networks:
+      - internal
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+
+  # ==============================================================
+  # Flower — Celery Monitoring
+  # ==============================================================
+  flower:
+    image: plusvalia-ai-backend:latest
+    command: celery -A celery_app flower --port=5555 --broker=redis://redis:6379/0
+    networks:
+      - internal
+      - iagenteknet
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.plusvalia-flower.rule=Host(`plusvalia-flower.iagentek.com.mx`)"
+        - "traefik.http.routers.plusvalia-flower.entrypoints=websecure"
+        - "traefik.http.routers.plusvalia-flower.tls.certresolver=letsencryptresolver"
+        - "traefik.http.services.plusvalia-flower.loadbalancer.server.port=5555"
+        - "traefik.docker.network=iagenteknet"
+
+volumes:
+  redis_data:
+    driver: local
+
+networks:
+  iagenteknet:
+    external: true
+  internal:
+    driver: overlay
+    internal: true

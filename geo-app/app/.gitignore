@@ -25,7 +25,6 @@ package-lock.json # lock file de npm (opcional incluirlo)
 .env.*.local
 .env.production
 environment.ts
-environment.prod.ts
 
 # Cache de Angular
 .angular/ # cache de Angular CLI
