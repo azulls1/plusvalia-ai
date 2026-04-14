@@ -1,5 +1,5 @@
 // src/app/pages/mapa/mapa.component.ts - Componente principal del mapa
-import { Component, OnInit, OnDestroy } from '@angular/core'; // decoradores de Angular
+import { Component, OnInit, OnDestroy, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common'; // módulo común para directivas básicas
 import { FormsModule } from '@angular/forms'; // módulo para ngModel y formularios
 import { RouterModule } from '@angular/router'; // módulo de rutas para routerLink
@@ -35,7 +35,7 @@ const MEXICAN_STATES: string[] = [
     templateUrl: './mapa.component.html', // ruta del template HTML
     styleUrls: ['./mapa.component.css'] // ruta de estilos CSS
 })
-export class MapaComponent implements OnInit, OnDestroy { // clase del componente implementa OnInit, OnDestroy
+export class MapaComponent implements OnInit, AfterViewInit, OnDestroy {
   private map: any;
   private heatLayer: any;
   private markersLayer: any;
@@ -85,6 +85,9 @@ export class MapaComponent implements OnInit, OnDestroy { // clase del component
 
   ngOnInit(): void {
     this.analytics.trackPageView('/mapa');
+  }
+
+  ngAfterViewInit(): void {
     this.initMap();
     this.loadData();
   }
