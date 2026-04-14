@@ -13,6 +13,12 @@ COPY package.json package-lock.json ./
 RUN npm ci --legacy-peer-deps
 
 COPY . .
+
+# Create environment.ts (required by Angular file replacement, gitignored)
+RUN if [ ! -f src/environments/environment.ts ]; then \
+    cp src/environments/environment.prod.ts src/environments/environment.ts; \
+    fi
+
 RUN npm run build
 
 # Stage 2 — Serve
