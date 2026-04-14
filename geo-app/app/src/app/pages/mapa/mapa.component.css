@@ -237,6 +237,29 @@ h3::after {
   line-height: 1.2;
 }
 
+/* ─── Boton Como Funciona ─── */
+.btn-como-funciona {
+  font-size: 0.7em;
+  font-weight: 600;
+  color: #04202C;
+  text-decoration: none;
+  padding: 5px 14px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #9EADA3, #C9D1C8);
+  border: none;
+  letter-spacing: 0.3px;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(158, 173, 163, 0.4);
+  white-space: nowrap;
+}
+
+.btn-como-funciona:hover {
+  background: linear-gradient(135deg, #C9D1C8, #fff);
+  color: #04202C;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(158, 173, 163, 0.6);
+}
+
 /* ─── Footer Forest ─── */
 footer {
   flex-shrink: 0;
