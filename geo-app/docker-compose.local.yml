@@ -1,0 +1,176 @@
+# ================================================================
+# DOCKER COMPOSE — Local Development (geo-app)
+# ================================================================
+# Stack local: Backend API, Redis, Celery Worker, Celery Beat, Flower
+#
+# Puertos exclusivos geo-app (rango 9100+):
+#   - Frontend Angular: 9100 (ng serve, fuera de Docker)
+#   - Backend API:      9101
+#   - Redis:            9102
+#   - Flower:           9103
+#
+# Usage:
+#   docker compose -f docker-compose.local.yml up -d --build
+#   docker compose -f docker-compose.local.yml logs -f
+#   docker compose -f docker-compose.local.yml down
+# ================================================================
+
+services:
+
+  # --------------------------------------------------------------
+  # Redis — Cache + Broker para Celery
+  # --------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: geo-redis
+    restart: unless-stopped
+    ports:
+      - "9102:6379"
+    volumes:
+      - geo_redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    networks:
+      - geo_internal
+
+  # --------------------------------------------------------------
+  # Backend API — FastAPI + ML Model
+  # --------------------------------------------------------------
+  backend-api:
+    build:
+      context: ./python_services
+      dockerfile: Dockerfile
+    container_name: geo-backend-api
+    restart: unless-stopped
+    ports:
+      - "9101:8000"
+    volumes:
+      - ./python_services/ml_model/models:/app/ml_model/models
+      - ./python_services/data:/app/data
+      - ./python_services/logs:/app/logs
+    env_file:
+      - ./python_services/.env
+    environment:
+      API_HOST: "0.0.0.0"
+      API_PORT: "8000"
+      API_WORKERS: "1"
+      API_RELOAD: "false"
+      REDIS_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/1"
+      PYTHONUNBUFFERED: "1"
+      LOG_LEVEL: "DEBUG"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    networks:
+      - geo_internal
+
+  # --------------------------------------------------------------
+  # Celery Worker — Background tasks (ML, enrichment, monitoring)
+  # --------------------------------------------------------------
+  celery-worker:
+    build:
+      context: ./python_services
+      dockerfile: Dockerfile
+    container_name: geo-celery-worker
+    restart: unless-stopped
+    command: celery -A celery_app worker --loglevel=info --concurrency=2 -Q default,ml,enrichment
+    volumes:
+      - ./python_services/ml_model/models:/app/ml_model/models
+      - ./python_services/data:/app/data
+      - ./python_services/logs:/app/logs
+    env_file:
+      - ./python_services/.env
+    environment:
+      REDIS_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/1"
+      PYTHONUNBUFFERED: "1"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A celery_app inspect ping --timeout 5 2>/dev/null | grep -q OK || exit 1"]
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 60s
+    networks:
+      - geo_internal
+
+  # --------------------------------------------------------------
+  # Celery Beat — Scheduler (drift check, baseline, cache cleanup)
+  # --------------------------------------------------------------
+  celery-beat:
+    build:
+      context: ./python_services
+      dockerfile: Dockerfile
+    container_name: geo-celery-beat
+    restart: unless-stopped
+    command: celery -A celery_app beat --loglevel=info
+    volumes:
+      - ./python_services/logs:/app/logs
+    env_file:
+      - ./python_services/.env
+    environment:
+      REDIS_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/1"
+      PYTHONUNBUFFERED: "1"
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - geo_internal
+
+  # --------------------------------------------------------------
+  # Flower — Celery monitoring UI
+  # --------------------------------------------------------------
+  flower:
+    build:
+      context: ./python_services
+      dockerfile: Dockerfile
+    container_name: geo-flower
+    restart: unless-stopped
+    command: celery -A celery_app flower --port=5555 --broker_api=redis://redis:6379/0
+    ports:
+      - "9103:5555"
+    env_file:
+      - ./python_services/.env
+    environment:
+      REDIS_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/1"
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:5555/healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - geo_internal
+
+# ================================================================
+# VOLUMES
+# ================================================================
+volumes:
+  geo_redis_data:
+    driver: local
+
+# ================================================================
+# NETWORKS
+# ================================================================
+networks:
+  geo_internal:
+    driver: bridge

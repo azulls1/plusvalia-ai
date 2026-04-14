@@ -1,0 +1,62 @@
+# ================================================================
+# DEPENDENCIAS PYTHON - Production
+# Optimizado para Python 3.11
+# ================================================================
+
+# ==================== API (Core) ====================
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+python-multipart==0.0.20
+
+# ==================== DATABASE ====================
+supabase==2.13.0
+psycopg2-binary==2.9.10
+sqlalchemy==2.0.36
+
+# ==================== DATA PROCESSING (Core) ====================
+pandas==2.2.3
+numpy==2.2.1
+
+# ==================== MACHINE LEARNING ====================
+scikit-learn==1.6.1
+xgboost==2.1.3
+joblib==1.4.2
+shap==0.46.0
+
+# ==================== UTILITIES ====================
+python-dotenv==1.0.1
+loguru==0.7.3
+tenacity==9.0.0
+psutil==6.1.1
+
+# ==================== HTTP ====================
+httpx==0.28.1
+requests==2.32.3
+
+# ==================== MONITORING ====================
+prometheus-fastapi-instrumentator==7.0.0
+scipy==1.15.1
+
+# ==================== REDIS / TASK QUEUE ====================
+redis==5.2.1
+hiredis==3.1.1
+celery[redis]==5.4.0
+flower==2.0.1
+
+# ==================== CONFIG ====================
+pyyaml==6.0.2
+
+# ==================== DATE/TIME ====================
+python-dateutil==2.9.0
+pytz==2024.2
+
+# ==================== GEOSPATIAL (Fases 1-4) ====================
+h3==4.1.0
+geopandas==1.0.1
+shapely==2.0.6
+rasterio==1.4.3
+
+# ==================== ML AVANZADO (Fase 4) ====================
+lightgbm==4.5.0
+optuna==4.1.0

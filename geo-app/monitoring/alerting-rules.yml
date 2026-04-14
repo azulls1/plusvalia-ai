@@ -1,0 +1,244 @@
+# ================================================================
+# PROMETHEUS ALERTING RULES — geo-app
+# ================================================================
+# Alerts: error rate, latency, container restarts, disk, memory.
+# ================================================================
+
+groups:
+
+  # ==============================================================
+  # Backend API Alerts
+  # ==============================================================
+  - name: backend_api_alerts
+    rules:
+
+      # ----------------------------------------------------------
+      # High Error Rate — >5% of requests return 5xx in 5 minutes
+      # ----------------------------------------------------------
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5..", job="backend-api"}[5m]))
+            /
+            sum(rate(http_requests_total{job="backend-api"}[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "High 5xx error rate on backend API"
+          description: >
+            The backend API error rate is {{ $value | humanizePercentage }}
+            (threshold: 5%) over the last 5 minutes.
+          runbook_url: "https://wiki.iagentek.com.mx/runbooks/high-error-rate"
+
+      # ----------------------------------------------------------
+      # High Latency — P95 response time exceeds 2 seconds
+      # ----------------------------------------------------------
+      - alert: HighLatencyP95
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(http_request_duration_seconds_bucket{job="backend-api"}[5m])) by (le)
+          ) > 2.0
+        for: 5m
+        labels:
+          severity: warning
+          team: backend
+        annotations:
+          summary: "High P95 latency on backend API"
+          description: >
+            P95 response time is {{ $value | humanizeDuration }}
+            (threshold: 2s) over the last 5 minutes.
+          runbook_url: "https://wiki.iagentek.com.mx/runbooks/high-latency"
+
+      # ----------------------------------------------------------
+      # Backend Down — No successful health checks
+      # ----------------------------------------------------------
+      - alert: BackendAPIDown
+        expr: up{job="backend-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: backend
+        annotations:
+          summary: "Backend API is down"
+          description: >
+            The backend API target {{ $labels.instance }} has been
+            unreachable for more than 2 minutes.
+
+  # ==============================================================
+  # Container / Infrastructure Alerts
+  # ==============================================================
+  - name: infrastructure_alerts
+    rules:
+
+      # ----------------------------------------------------------
+      # Container Restart — container restarted unexpectedly
+      # ----------------------------------------------------------
+      - alert: ContainerRestart
+        expr: |
+          increase(container_restart_count{name=~".*backend.*|.*traefik.*|.*prometheus.*|.*grafana.*"}[15m]) > 0
+        for: 1m
+        labels:
+          severity: warning
+          team: infra
+        annotations:
+          summary: "Container {{ $labels.name }} restarted"
+          description: >
+            Container {{ $labels.name }} has restarted
+            {{ $value }} time(s) in the last 15 minutes.
+
+      # ----------------------------------------------------------
+      # Disk Usage — Host disk usage exceeds 85%
+      # ----------------------------------------------------------
+      - alert: HighDiskUsage
+        expr: |
+          (
+            (node_filesystem_size_bytes{fstype!~"tmpfs|overlay"} - node_filesystem_avail_bytes{fstype!~"tmpfs|overlay"})
+            / node_filesystem_size_bytes{fstype!~"tmpfs|overlay"}
+          ) > 0.85
+        for: 10m
+        labels:
+          severity: warning
+          team: infra
+        annotations:
+          summary: "Disk usage above 85% on {{ $labels.instance }}"
+          description: >
+            Filesystem {{ $labels.mountpoint }} on {{ $labels.instance }}
+            is at {{ $value | humanizePercentage }} capacity.
+          runbook_url: "https://wiki.iagentek.com.mx/runbooks/high-disk-usage"
+
+      # ----------------------------------------------------------
+      # Memory Usage — Container memory exceeds 90%
+      # ----------------------------------------------------------
+      - alert: HighMemoryUsage
+        expr: |
+          (
+            container_memory_usage_bytes{name=~".*backend.*|.*traefik.*|.*prometheus.*|.*grafana.*"}
+            / container_spec_memory_limit_bytes{name=~".*backend.*|.*traefik.*|.*prometheus.*|.*grafana.*"}
+          ) > 0.90
+        for: 5m
+        labels:
+          severity: warning
+          team: infra
+        annotations:
+          summary: "High memory usage on container {{ $labels.name }}"
+          description: >
+            Container {{ $labels.name }} is using
+            {{ $value | humanizePercentage }} of its memory limit
+            for more than 5 minutes.
+
+  # ==============================================================
+  # Traefik Alerts
+  # ==============================================================
+  - name: traefik_alerts
+    rules:
+
+      # ----------------------------------------------------------
+      # Traefik Down
+      # ----------------------------------------------------------
+      - alert: TraefikDown
+        expr: up{job="traefik"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          team: infra
+        annotations:
+          summary: "Traefik proxy is down"
+          description: "Traefik has been unreachable for more than 2 minutes."
+
+      # ----------------------------------------------------------
+      # High Traefik Error Rate
+      # ----------------------------------------------------------
+      - alert: TraefikHighErrorRate
+        expr: |
+          sum(rate(traefik_service_requests_total{code=~"5.."}[5m]))
+          / sum(rate(traefik_service_requests_total[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: critical
+          team: infra
+        annotations:
+          summary: "Traefik reporting high 5xx error rate"
+          description: >
+            Traefik 5xx rate is {{ $value | humanizePercentage }}
+            over the last 5 minutes.
+
+  # ==============================================================
+  # ML Model Alerts
+  # ==============================================================
+  - name: ml_model
+    rules:
+
+      - alert: ModelNotLoaded
+        expr: up{job="backend-api"} == 1 and absent(http_requests_total{handler="/predictions/predict"})
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "ML model may not be loaded - no prediction requests detected"
+
+      - alert: HighInferenceLatency
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{handler="/predictions/predict"}[5m])) by (le)) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "ML inference P95 latency > 5s"
+
+      - alert: DriftDetected
+        expr: increase(http_requests_total{handler="/predictions/drift-status", status="200"}[1h]) > 0
+        for: 0m
+        labels:
+          severity: info
+        annotations:
+          summary: "Data drift check was executed - verify results"
+
+  # ==============================================================
+  # Capacity Alerts
+  # ==============================================================
+  - name: capacity
+    rules:
+
+      - alert: HighCPUUsage
+        expr: process_cpu_seconds_total > 0.9
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on backend API"
+
+      - alert: LowDiskSpace
+        expr: node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"} < 0.15
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Less than 15% disk space remaining"
+
+  # ==============================================================
+  # SLO Recording Rules
+  # ==============================================================
+  - name: slo_recording
+    interval: 1m
+    rules:
+      - record: slo:api_availability:ratio_1h
+        expr: 1 - (sum(rate(http_requests_total{status=~"5.."}[1h])) / sum(rate(http_requests_total[1h])))
+
+      - record: slo:api_latency_p95:seconds_1h
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[1h])) by (le))
+
+      - record: slo:api_latency_p99:seconds_1h
+        expr: histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket[1h])) by (le))
+
+      - record: slo:error_budget_remaining:ratio
+        expr: 1 - ((1 - slo:api_availability:ratio_1h) / (1 - 0.99))
+
+      - alert: ErrorBudgetBurn
+        expr: slo:error_budget_remaining:ratio < 0.25
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Error budget nearly exhausted ({{ $value | humanizePercentage }} remaining)"

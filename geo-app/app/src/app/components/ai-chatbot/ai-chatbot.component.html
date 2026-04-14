@@ -1,0 +1,104 @@
+<!-- Botón flotante para abrir el chat -->
+<button
+  class="chat-toggle-btn"
+  (click)="toggleChat()"
+  [class.active]="isOpen"
+  title="Asistente de Inversión IA"
+  [attr.aria-expanded]="isOpen"
+  aria-controls="chat-panel"
+  aria-label="Abrir asistente de inversión IA">
+  <span *ngIf="!isOpen">💬</span>
+  <span *ngIf="isOpen">✕</span>
+</button>
+
+<!-- Panel del chat -->
+<div class="chat-panel" [class.open]="isOpen" id="chat-panel" role="complementary" aria-label="Asistente de inversión IA">
+  <!-- Header del chat -->
+  <div class="chat-header">
+    <div class="chat-header-info">
+      <div class="chat-avatar">🤖</div>
+      <div>
+        <h3>Favier AI</h3>
+        <p>Asistente Inmobiliario</p>
+      </div>
+    </div>
+    <div class="chat-header-actions">
+      <button
+        class="btn-clear"
+        (click)="clearChat()"
+        title="Limpiar conversación"
+        aria-label="Limpiar conversación">
+        🔄
+      </button>
+      <button
+        class="btn-close"
+        (click)="toggleChat()"
+        title="Cerrar"
+        aria-label="Cerrar chat">
+        ✕
+      </button>
+    </div>
+  </div>
+  
+  <!-- Mensajes del chat -->
+  <div class="chat-messages" #chatMessagesEl role="log" aria-live="polite" aria-label="Mensajes del chat">
+    <!-- Mensaje individual -->
+    <div
+      *ngFor="let message of messages; let i = index; trackBy: trackByMessage"
+      class="message"
+      [class.user-message]="message.role === 'user'"
+      [class.assistant-message]="message.role === 'assistant'">
+      
+      <div class="message-avatar">
+        <span *ngIf="message.role === 'user'">👤</span>
+        <span *ngIf="message.role === 'assistant'">🤖</span>
+      </div>
+      
+      <div class="message-content">
+        <div class="message-text">{{ message.content }}</div>
+        <div class="message-time">
+          {{ message.timestamp | date:'short' }}
+        </div>
+        <div class="feedback-buttons" *ngIf="message.role === 'assistant'">
+          <button class="btn btn-sm btn-outline-success" (click)="rateFeedback(i, 'positive')" aria-label="Respuesta útil">👍</button>
+          <button class="btn btn-sm btn-outline-danger" (click)="rateFeedback(i, 'negative')" aria-label="Respuesta no útil">👎</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Indicador de carga -->
+    <div *ngIf="isLoading" class="message assistant-message" role="status">
+      <div class="message-avatar">🤖</div>
+      <div class="message-content">
+        <div class="typing-indicator">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Sin ejemplos de preguntas - interacción libre con el bot -->
+  
+  <!-- Input del chat -->
+  <div class="chat-input">
+    <textarea
+      [(ngModel)]="userInput"
+      (keypress)="onKeyPress($event)"
+      placeholder="Escribe tu pregunta sobre inversiones..."
+      rows="1"
+      [disabled]="isLoading"
+      aria-label="Escribe tu pregunta sobre inversiones"></textarea>
+    
+    <button
+      class="btn-send"
+      (click)="sendMessage()"
+      [disabled]="!userInput.trim() || isLoading"
+      title="Enviar mensaje"
+      aria-label="Enviar mensaje">
+      <span *ngIf="!isLoading">📤</span>
+      <span *ngIf="isLoading" class="spinner">⏳</span>
+    </button>
+  </div>
+</div>

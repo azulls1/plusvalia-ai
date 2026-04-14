@@ -1,0 +1,279 @@
+{
+  "name": "Inmobiliaria - Ingest CSV",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ingest-csv",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "webhook-1",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "operation": "parseCSV",
+        "mode": "jsonToCsv",
+        "options": {
+          "delimiter": ","
+        }
+      },
+      "id": "csv-parser-1",
+      "name": "Parse CSV",
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "geocode_address",
+              "name": "address_query",
+              "value": "={{ $json.address }}, {{ $json.city }}, {{ $json.state }}, México",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-address-1",
+      "name": "Prepare Address",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "url": "https://nominatim.openstreetmap.org/search",
+        "authentication": "none",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ $json.address_query }}"
+            },
+            {
+              "name": "format",
+              "value": "json"
+            },
+            {
+              "name": "limit",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": false,
+          "followRedirect": true,
+          "timeout": 10000
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "inmo-geo-mvp/1.0 (contacto@iagentek.com.mx)"
+            }
+          ]
+        }
+      },
+      "id": "nominatim-1",
+      "name": "Geocode with Nominatim",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [850, 300],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "lat",
+              "name": "lat",
+              "value": "={{ $json[0]?.lat || null }}",
+              "type": "number"
+            },
+            {
+              "id": "lon",
+              "name": "lon",
+              "value": "={{ $json[0]?.lon || null }}",
+              "type": "number"
+            },
+            {
+              "id": "price_m2",
+              "name": "price_m2",
+              "value": "={{ $('Webhook').item.json.price_mxn / $('Webhook').item.json.area_m2 }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-coords-1",
+      "name": "Extract Coordinates",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [1050, 300]
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "operation": "insert",
+        "tableId": "iainmobiliaria_comparables",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "title",
+              "fieldValue": "={{ $('Webhook').item.json.title }}"
+            },
+            {
+              "fieldId": "price_mxn",
+              "fieldValue": "={{ $('Webhook').item.json.price_mxn }}"
+            },
+            {
+              "fieldId": "area_m2",
+              "fieldValue": "={{ $('Webhook').item.json.area_m2 }}"
+            },
+            {
+              "fieldId": "address",
+              "fieldValue": "={{ $('Webhook').item.json.address }}"
+            },
+            {
+              "fieldId": "city",
+              "fieldValue": "={{ $('Webhook').item.json.city }}"
+            },
+            {
+              "fieldId": "state",
+              "fieldValue": "={{ $('Webhook').item.json.state }}"
+            },
+            {
+              "fieldId": "lat",
+              "fieldValue": "={{ $json.lat }}"
+            },
+            {
+              "fieldId": "lon",
+              "fieldValue": "={{ $json.lon }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "supabase-insert-1",
+      "name": "Insert to Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1250, 300],
+      "credentials": {
+        "supabaseApi": {
+          "id": "supabase-creds",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"ok\": true, \"inserted\": $itemIndex + 1, \"message\": \"CSV procesado correctamente\" } }}"
+      },
+      "id": "respond-1",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1450, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Parse CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse CSV": {
+      "main": [
+        [
+          {
+            "node": "Prepare Address",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Address": {
+      "main": [
+        [
+          {
+            "node": "Geocode with Nominatim",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Geocode with Nominatim": {
+      "main": [
+        [
+          {
+            "node": "Extract Coordinates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Coordinates": {
+      "main": [
+        [
+          {
+            "node": "Insert to Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert to Supabase": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2025-10-25T00:00:00.000Z",
+      "updatedAt": "2025-10-25T00:00:00.000Z",
+      "id": "inmobiliaria",
+      "name": "Inmobiliaria"
+    }
+  ],
+  "pinData": {},
+  "versionId": "1"
+}
+

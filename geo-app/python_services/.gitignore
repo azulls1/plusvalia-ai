@@ -1,0 +1,99 @@
+# ================================================================
+# .gitignore - Python Services
+# ================================================================
+
+# ==================== ARCHIVOS SENSIBLES (CRÍTICO) ====================
+# NUNCA subir estos archivos a Git
+.env
+.env.local
+.env.production
+.env.*.local
+config_local.py
+*_secret.py
+*_secrets.py
+credentials.json
+*.pem
+*.key
+*.cert
+
+# ==================== Python ====================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ==================== Virtual Environment ====================
+venv/
+ENV/
+env/
+.venv
+
+# ==================== IDEs ====================
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ==================== Logs ====================
+logs/
+*.log
+*.log.*
+
+# ==================== Datos Sensibles ====================
+data/*.csv
+data/*.json
+data/*.xlsx
+!data/samples/  # Permitir carpeta samples con datos de ejemplo
+
+# ==================== Modelos ML ====================
+ml_model/models/*.pkl
+ml_model/models/*.joblib
+ml_model/models/*.h5
+!ml_model/models/.gitkeep  # Mantener carpeta
+
+# ==================== Playwright ====================
+.playwright/
+
+# ==================== Jupyter ====================
+.ipynb_checkpoints/
+*.ipynb
+
+# ==================== Sistema ====================
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ==================== Coverage ====================
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+
+# ==================== PyTest ====================
+.pytest_cache/
+.tox/
+
+# ==================== MyPy ====================
+.mypy_cache/
+.dmypy.json
+dmypy.json
+

@@ -1,0 +1,24 @@
+/* file-upload.component.css — Forest Design System */
+
+.card {
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.card-header {
+  font-weight: 600;
+}
+
+.form-control:disabled {
+  background-color: var(--color-bg-muted);
+  cursor: not-allowed;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.d-flex.gap-2 {
+  gap: 0.5rem;
+}

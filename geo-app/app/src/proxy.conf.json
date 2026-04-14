@@ -1,0 +1,10 @@
+{
+  "/supabase-api": {
+    "target": "https://iagenteksupabase.iagentek.com.mx",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/supabase-api": ""
+    }
+  }
+}

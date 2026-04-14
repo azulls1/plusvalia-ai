@@ -1,0 +1,8 @@
+# Daily database backup at 2 AM
+0 2 * * * /root/geo-app/scripts/backup.sh db >> /var/log/geo-app-backup.log 2>&1
+
+# Weekly full backup on Sunday at 3 AM
+0 3 * * 0 /root/geo-app/scripts/backup.sh full >> /var/log/geo-app-backup.log 2>&1
+
+# Monthly backup verification on 1st at 4 AM
+0 4 1 * * /root/geo-app/scripts/backup.sh verify >> /var/log/geo-app-backup.log 2>&1

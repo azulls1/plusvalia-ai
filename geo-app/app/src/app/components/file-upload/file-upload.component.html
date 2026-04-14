@@ -1,0 +1,77 @@
+<!-- src/app/components/file-upload/file-upload.component.html - Template del componente de subida -->
+<div class="card">
+  <div class="card-header bg-primary text-white py-2">
+    <h6 class="mb-0">Subir Comparables CSV</h6>
+  </div>
+  <div class="card-body py-2 px-3">
+
+    <!-- Input de archivo -->
+    <div class="mb-2">
+      <label for="fileInput" class="form-label small mb-1">Seleccionar archivo CSV</label>
+      <input
+        type="file"
+        id="fileInput"
+        class="form-control form-control-sm"
+        accept=".csv"
+        (change)="onFileSelected($event)"
+        [disabled]="disabled || uploading"
+        aria-describedby="file-format-help">
+    </div>
+
+    <!-- Nombre del archivo seleccionado -->
+    <div *ngIf="selectedFile" class="text-muted mb-2">
+      <small>{{ selectedFile.name }} ({{ (selectedFile.size / 1024).toFixed(1) }} KB)</small>
+    </div>
+
+    <!-- Barra de progreso -->
+    <div *ngIf="uploading" class="mb-2">
+      <div class="progress" style="height: 6px;">
+        <div class="progress-bar progress-bar-striped progress-bar-animated"
+             role="progressbar"
+             [style.width.%]="uploadProgress"
+             [attr.aria-valuenow]="uploadProgress"
+             aria-valuemin="0"
+             aria-valuemax="100">
+        </div>
+      </div>
+    </div>
+
+    <!-- Mensaje de resultado -->
+    <div *ngIf="uploadMessage" role="alert" aria-live="polite" class="py-1 px-2 mb-2 rounded small" [ngClass]="{
+      'alert': true,
+      'alert-success': uploadStatus === 'success',
+      'alert-danger': uploadStatus === 'error',
+      'alert-info': uploadStatus === ''
+    }">
+      {{ uploadMessage }}
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="d-flex gap-2">
+      <button
+        class="btn btn-sm btn-primary flex-grow-1"
+        (click)="uploadFile()"
+        [disabled]="!selectedFile || disabled || uploading">
+        <span *ngIf="!uploading">Cargar Comparables</span>
+        <span *ngIf="uploading">
+          <span class="spinner-border spinner-border-sm me-1"></span>
+          Subiendo...
+        </span>
+      </button>
+
+      <button
+        class="btn btn-sm btn-secondary"
+        (click)="clearSelection()"
+        [disabled]="!selectedFile || disabled || uploading">
+        Limpiar
+      </button>
+    </div>
+
+    <!-- Información adicional -->
+    <div class="mt-2">
+      <small class="text-muted" id="file-format-help">
+        Formato: CSV con columnas title, price_mxn, area_m2, address, city, state
+      </small>
+    </div>
+  </div>
+</div>

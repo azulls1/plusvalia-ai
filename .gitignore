@@ -1,0 +1,58 @@
+# Excluded projects
+nxt-ai-development/
+desing-system/
+
+# Claude Code memory
+.claude/
+
+# NXT framework state
+.nxt/
+
+# Environment & secrets
+.env
+.env.local
+.env.production
+*.pem
+*.key
+credentials*.json
+
+# Node
+node_modules/
+dist/
+.angular/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+# ML models & data artifacts
+*.pkl
+*.joblib
+*.h5
+*.model
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Docker volumes
+postgres_data/
+redis_data/
+
+# Logs
+*.log
+logs/
+
+# Root package-lock (not part of project)
+/package-lock.json

@@ -1,0 +1,47 @@
+# .gitignore - Archivos y carpetas ignorados por Git
+
+# Dependencias de Node
+node_modules/ # carpeta de módulos de Node.js
+npm-debug.log # logs de npm
+yarn-error.log # logs de Yarn
+package-lock.json # lock file de npm (opcional incluirlo)
+
+# Archivos compilados de Angular
+/dist # salida del build
+/tmp # archivos temporales
+/out-tsc # salida del compilador TypeScript
+
+# IDEs y editores
+.idea/ # JetBrains IDEs
+.vscode/ # Visual Studio Code
+*.swp # archivos temporales de Vim
+*.swo # archivos temporales de Vim
+*~ # archivos de respaldo
+.DS_Store # archivos de macOS
+
+# Archivos de entorno - NUNCA subir a Git
+.env
+.env.local
+.env.*.local
+.env.production
+environment.ts
+environment.prod.ts
+
+# Cache de Angular
+.angular/ # cache de Angular CLI
+.sass-cache/ # cache de Sass
+
+# Archivos de sistema
+Thumbs.db # Windows thumbnails
+Desktop.ini # Windows desktop config
+
+# Logs
+*.log # todos los archivos de log
+
+# Cobertura de tests
+/coverage # reportes de cobertura
+
+# E2E
+/e2e/*.js # archivos JS de e2e
+/e2e/*.map # source maps de e2e
+

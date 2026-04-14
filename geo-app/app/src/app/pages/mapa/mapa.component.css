@@ -1,0 +1,346 @@
+/* src/app/pages/mapa/mapa.component.css — Forest Design System */
+
+/* ─── Layout Principal ─── */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--color-bg-page);
+}
+
+.content {
+  flex: 1 0 auto;
+  animation: fadeIn 0.6s var(--ease-apple);
+}
+
+/* Mapa */
+#map {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  border-radius: 0;
+  box-shadow: inset 0 0 50px rgba(4, 32, 44, 0.05);
+  transition: var(--transition-smooth);
+}
+
+.map-container {
+  height: calc(100vh - 70px);
+  overflow: hidden;
+  position: relative;
+}
+
+.map-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--gradient-primary);
+  z-index: 10;
+  animation: slideInDown 0.5s var(--ease-apple);
+}
+
+@keyframes slideInDown {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(0); }
+}
+
+.row-content {
+  height: 100%;
+}
+
+/* Sidebar con glassmorphism */
+.overflow-auto {
+  height: 100%;
+  overflow-y: auto;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  animation: slideInLeft 0.6s var(--ease-apple);
+  box-shadow: 2px 0 20px rgba(4, 32, 44, 0.05);
+}
+
+/* Título sidebar */
+h3 {
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: 'Sora', sans-serif;
+  font-weight: 700;
+  font-size: 1.5rem;
+  letter-spacing: -0.5px;
+  margin-bottom: 1.5rem !important;
+  position: relative;
+  animation: fadeIn 0.8s var(--ease-apple);
+}
+
+h3::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 40px;
+  height: 3px;
+  background: var(--gradient-primary);
+  border-radius: 2px;
+  animation: slideInLeft 1s var(--ease-apple);
+}
+
+/* Leaflet popups */
+.leaflet-popup-content {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.leaflet-popup-content strong {
+  color: var(--color-text-primary);
+}
+
+/* Summary cards clickeables */
+.summary-card {
+  border-radius: 6px;
+  padding: 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.summary-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  filter: brightness(0.97);
+}
+.summary-card:active {
+  transform: translateY(0);
+}
+
+/* Modal de resumen */
+.summary-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.2s ease;
+}
+.summary-modal {
+  background: #fff;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 420px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  animation: modalIn 0.25s ease;
+}
+.summary-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: #04202C;
+  color: #fff;
+}
+.summary-modal-body {
+  padding: 20px;
+  font-size: 0.9em;
+  line-height: 1.7;
+  color: #334155;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Botón volver a vista nacional */
+.btn-country-view {
+  position: absolute;
+  top: 12px;
+  left: 60px;
+  z-index: 1000;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2563eb;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+  transition: all 0.2s ease;
+}
+.btn-country-view:hover {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+/* State tooltip on hover (choropleth) */
+:host ::ng-deep .state-tooltip-choropleth {
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  color: #1e3a5f;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  max-width: 220px;
+}
+
+/* State name + score labels centered on each state */
+:host ::ng-deep .state-label-choropleth {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  pointer-events: none;
+}
+
+:host ::ng-deep .state-label-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  text-align: center;
+  pointer-events: none;
+}
+
+:host ::ng-deep .state-label-name {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: #1e293b;
+  text-shadow: 0 0 3px rgba(255,255,255,0.9), 0 0 6px rgba(255,255,255,0.7);
+  white-space: nowrap;
+  line-height: 1.2;
+}
+
+:host ::ng-deep .state-label-score {
+  font-family: 'Sora', 'DM Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  color: #0f172a;
+  text-shadow: 0 0 4px rgba(255,255,255,0.95), 0 0 8px rgba(255,255,255,0.8);
+  line-height: 1.2;
+}
+
+/* ─── Footer Forest ─── */
+footer {
+  flex-shrink: 0;
+  min-height: 70px;
+  background: var(--gradient-dark);
+  border-top: none;
+  box-shadow: 0 -4px 20px rgba(4, 32, 44, 0.2);
+  position: relative;
+  overflow: hidden;
+  animation: slideInUp 0.6s var(--ease-apple);
+  padding: 20px 0 !important;
+}
+
+@keyframes slideInUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+  animation: shimmer 4s infinite;
+}
+
+@keyframes shimmer {
+  0%   { left: -100%; }
+  100% { left: 100%; }
+}
+
+footer::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #5B7065, #04202C, #5B7065);
+  animation: expandWidth 1s var(--ease-apple);
+}
+
+@keyframes expandWidth {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+footer .badge {
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 9999px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  transition: var(--transition-smooth);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+footer .badge:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 4px 16px rgba(91, 112, 101, 0.4);
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+footer small {
+  font-size: 13px;
+  letter-spacing: 0.3px;
+}
+
+footer strong {
+  background: linear-gradient(135deg, #9EADA3, #C9D1C8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+footer .footer-link {
+  color: #9EADA3;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+footer .footer-link:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  footer .row.py-4 > div {
+    text-align: center;
+  }
+  footer .d-flex {
+    justify-content: center;
+  }
+  footer .badge { margin: 2px !important; }
+  footer { padding: 20px 0 !important; min-height: auto; }
+  footer .text-md-end { text-align: center !important; }
+}

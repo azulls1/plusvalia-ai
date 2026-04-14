@@ -1,0 +1,113 @@
+# ================================================================
+# DOCKER COMPOSE LOCAL — Desarrollo en localhost
+# ================================================================
+# Puertos: Backend 9101, Redis 9102, Flower 5555
+# Uso: docker compose -f docker-compose.local.yml up --build
+# ================================================================
+
+services:
+  # ========================================
+  # REDIS (puerto 9102 local)
+  # ========================================
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "9102:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ========================================
+  # FASTAPI BACKEND (puerto 9101 local)
+  # ========================================
+  backend-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "9101:8000"
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - API_WORKERS=2
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - ALLOWED_ORIGINS=http://localhost:9100,http://localhost:4200
+      - LOG_LEVEL=DEBUG
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./ml_model/models:/app/ml_model/models
+      - ./data:/app/data
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # ========================================
+  # CELERY WORKER
+  # ========================================
+  celery-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A celery_app worker --loglevel=info --concurrency=2 -Q default,ml,enrichment
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./ml_model/models:/app/ml_model/models
+
+  # ========================================
+  # CELERY BEAT (Scheduler)
+  # ========================================
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A celery_app beat --loglevel=info
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  # ========================================
+  # FLOWER (Monitor Celery — puerto 5555)
+  # ========================================
+  flower:
+    image: mher/flower:2.0
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+    depends_on:
+      redis:
+        condition: service_healthy
+
+volumes:
+  redis_data:
+    driver: local

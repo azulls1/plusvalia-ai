@@ -1,0 +1,143 @@
+<!-- Botón para mostrar/ocultar dashboard -->
+<button
+  class="stats-toggle-btn"
+  (click)="toggleVisibility()"
+  [class.active]="isVisible"
+  [attr.aria-expanded]="isVisible"
+  aria-controls="stats-dashboard-panel">
+  <span *ngIf="!isVisible">📊 Mostrar Estadísticas</span>
+  <span *ngIf="isVisible">✕ Cerrar</span>
+</button>
+
+<!-- Panel de estadísticas -->
+<div class="stats-dashboard" *ngIf="isVisible" id="stats-dashboard-panel" role="region" aria-label="Dashboard de análisis">
+  <div class="stats-container">
+    
+    <!-- Encabezado -->
+    <div class="stats-header">
+      <div>
+        <h3>📊 Dashboard de Análisis</h3>
+        <p>Análisis detallado de {{totalPredictions | number}} predicciones</p>
+      </div>
+      <button class="close-btn" (click)="toggleVisibility()" title="Cerrar dashboard">
+        ✕
+      </button>
+    </div>
+
+    <!-- Métricas clave -->
+    <div class="metrics-grid" role="group" aria-label="Métricas clave">
+      <div class="metric-card" role="figure" aria-label="Predicciones totales">
+        <div class="metric-icon">🎯</div>
+        <div class="metric-value">{{totalPredictions | number}}</div>
+        <div class="metric-label">Predicciones Totales</div>
+      </div>
+
+      <div class="metric-card" role="figure" aria-label="Precio promedio por metro cuadrado">
+        <div class="metric-icon">💰</div>
+        <div class="metric-value">${{avgPrice | number:'1.0-0'}}</div>
+        <div class="metric-label">Precio Promedio/m²</div>
+      </div>
+
+      <div class="metric-card" role="figure" aria-label="Score promedio de plusvalía">
+        <div class="metric-icon">📈</div>
+        <div class="metric-value">{{avgScore | number:'1.1-1'}}</div>
+        <div class="metric-label">Score Promedio</div>
+      </div>
+
+      <div class="metric-card" role="figure" aria-label="Ciudades analizadas">
+        <div class="metric-icon">🏙️</div>
+        <div class="metric-value">{{citiesStats.length}}</div>
+        <div class="metric-label">Ciudades Analizadas</div>
+      </div>
+    </div>
+
+    <!-- Top 10 Ciudades por Score -->
+    <div class="stats-section">
+      <h4>🏆 Top 10 Ciudades por Plusvalía</h4>
+      <div class="opportunities-list">
+        <div
+          *ngFor="let opp of topOpportunities; trackBy: trackByRank"
+          class="opportunity-item"
+          [style.border-left-color]="getColorByScore(opp.avgScore)">
+          <div class="opp-rank">{{opp.rank}}</div>
+          <div class="opp-details">
+            <div class="opp-location">
+              <strong>{{opp.city}}</strong> ({{opp.count | number}} predicciones)
+            </div>
+            <div class="opp-score">
+              <strong>Score:</strong> {{opp.avgScore}}/100 &nbsp;|&nbsp;
+              <strong>Precio:</strong> ${{opp.avgPrice | number:'1.0-0'}}/m²
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Distribución de Precios -->
+    <div class="stats-section">
+      <h4>📊 Distribución de Precios/m²</h4>
+      <div class="chart-container" aria-label="Gráfico de distribución de precios por metro cuadrado">
+        <div *ngFor="let dist of priceDistribution; trackBy: trackByRange" class="chart-bar-item">
+          <div class="chart-label">{{dist.range}}</div>
+          <div class="chart-bar-wrapper">
+            <div
+              class="chart-bar"
+              [style.width.%]="(dist.percentage / getMaxPercentage()) * 100">
+            </div>
+            <span class="chart-value">{{dist.count | number}} ({{dist.percentage | number:'1.1-1'}}%)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Distribución de Potencial -->
+    <div class="stats-section">
+      <h4>🎯 Distribución de Potencial de Plusvalía</h4>
+      <div class="potential-grid" aria-label="Distribución de potencial de plusvalía">
+        <div
+          *ngFor="let pot of potentialDistribution; trackBy: trackByLabel"
+          class="potential-card"
+          [style.border-color]="pot.color">
+          <div class="potential-color" [style.background]="pot.color"></div>
+          <div class="potential-label">{{pot.label}}</div>
+          <div class="potential-count">{{pot.count | number}}</div>
+          <div class="potential-percentage">{{pot.percentage | number:'1.1-1'}}%</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Comparativa de Ciudades -->
+    <div class="stats-section" *ngIf="citiesStats.length > 0">
+      <h4>🏙️ Comparativa de Ciudades</h4>
+      <div class="cities-comparison" aria-label="Comparativa de estadísticas entre ciudades">
+        <div *ngFor="let city of citiesStats; trackBy: trackByCity" class="city-card">
+          <div class="city-header">
+            <h5>{{city.city}}</h5>
+            <span class="city-badge">{{city.predictions_count | number}} pred.</span>
+          </div>
+          <div class="city-stats">
+            <div class="city-stat">
+              <span class="stat-label">Precio Promedio:</span>
+              <span class="stat-value">${{city.avg_price_m2 | number:'1.0-0'}}/m²</span>
+            </div>
+            <div class="city-stat">
+              <span class="stat-label">Score Promedio:</span>
+              <span class="stat-value">{{city.avg_plusvalia_score | number:'1.1-1'}}/100</span>
+            </div>
+            <div class="city-stat">
+              <span class="stat-label">Rango:</span>
+              <span class="stat-value">${{city.min_price_m2 | number:'1.0-0'}} - ${{city.max_price_m2 | number:'1.0-0'}}</span>
+            </div>
+          </div>
+          <div class="city-potential-bar">
+            <div class="potential-segment alto" [style.width.%]="(city.potential_distribution.alto / city.predictions_count) * 100"></div>
+            <div class="potential-segment medio" [style.width.%]="(city.potential_distribution.medio / city.predictions_count) * 100"></div>
+            <div class="potential-segment bajo" [style.width.%]="(city.potential_distribution.bajo / city.predictions_count) * 100"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+

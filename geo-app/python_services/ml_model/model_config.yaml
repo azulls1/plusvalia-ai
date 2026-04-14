@@ -1,0 +1,222 @@
+# Model Configuration — geo-app ML Pipeline V3 + Hierarchical
+# Externalized hyperparameters, thresholds, and economic clusters
+
+# Legacy RandomForest config (used by predictor.py)
+model:
+  type: "RandomForestRegressor"
+  algorithm: xgboost  # Used by HierarchicalPredictor
+  hyperparameters:
+    n_estimators: 100
+    max_depth: 15
+    min_samples_split: 10
+    min_samples_leaf: 5
+    random_state: 42
+    n_jobs: -1
+  # XGBoost hyperparameters per level (used by HierarchicalPredictor)
+  global:
+    n_estimators: 500
+    max_depth: 8
+    learning_rate: 0.05
+  cluster:
+    n_estimators: 300
+    max_depth: 6
+    learning_rate: 0.08
+  state:
+    n_estimators: 200
+    max_depth: 5
+    learning_rate: 0.1
+
+training:
+  test_size: 0.2
+  min_samples: 50
+  cross_validation_folds: 5
+
+thresholds:
+  plusvalia_score:
+    muy_alto: 75
+    alto: 60
+    medio: 40
+    # below medio = bajo
+
+features:
+  numeric:
+    - area_m2
+    - is_large_lot
+    - distance_to_center
+    - lat_normalized
+    - lon_normalized
+    - population_density
+    - economic_level_score
+    - unemployment_rate
+    - avg_income
+    - education_index
+    - security_score
+    - infrastructure_score
+    - pct_vacant_housing
+    - population_growth
+    # V3: new demographics
+    - median_age
+    - homicide_rate_per_100k
+    - pct_internet
+    - pea_pct
+    # V3: amenity features
+    - nearest_school_km
+    - nearest_hospital_km
+    - nearest_supermarket_km
+    - amenity_count_1km
+    - walkability_score
+    # V3: interaction features
+    - area_x_income
+    - distance_x_density
+    # Temporal
+    - month
+    - quarter
+    # Target-encoded categoricals
+    - city_encoded
+    - state_encoded
+  categorical:
+    - city
+    - state
+
+# Hierarchical model cluster definitions (used by HierarchicalPredictor)
+# Each cluster has a list of states and a minimum sample threshold
+clusters:
+  metropolitan_premium:
+    states: [Ciudad de Mexico, Nuevo Leon, Jalisco]
+    min_samples: 1000
+  tourism:
+    states: [Quintana Roo, Baja California Sur, Nayarit, Guerrero]
+    min_samples: 500
+  northern_border:
+    states: [Chihuahua, Sonora, Tamaulipas, Baja California, Coahuila]
+    min_samples: 500
+  bajio_industrial:
+    states: [Queretaro, Guanajuato, Aguascalientes, San Luis Potosi]
+    min_samples: 500
+  central:
+    states: [Puebla, Estado de Mexico, Morelos, Hidalgo, Tlaxcala]
+    min_samples: 500
+  southern:
+    states: [Chiapas, Oaxaca, Tabasco]
+    min_samples: 300
+  mid_tier_capitals:
+    states: [Michoacan, Veracruz, Durango, Sinaloa, Yucatan, Colima, Campeche, Zacatecas]
+    min_samples: 300
+
+# V3: Economic cluster definitions for Mexican states (legacy format with accented names)
+# Used for regional analysis and potential cluster-level modeling
+economic_clusters:
+  metropolitan_premium:
+    - "Distrito Federal"
+    - "Nuevo León"
+    - "Jalisco"
+  tourism:
+    - "Quintana Roo"
+    - "Baja California Sur"
+    - "Nayarit"
+    - "Guerrero"
+  northern_border:
+    - "Chihuahua"
+    - "Sonora"
+    - "Tamaulipas"
+    - "Baja California"
+    - "Coahuila"
+  bajio_industrial:
+    - "Querétaro"
+    - "Guanajuato"
+    - "Aguascalientes"
+    - "San Luis Potosí"
+  central:
+    - "Puebla"
+    - "Estado de México"
+    - "Morelos"
+    - "Hidalgo"
+    - "Tlaxcala"
+  southern:
+    - "Chiapas"
+    - "Oaxaca"
+    - "Tabasco"
+  mid_tier_capitals:
+    - "Michoacán"
+    - "Veracruz"
+    - "Durango"
+    - "Sinaloa"
+    - "Yucatán"
+    - "Colima"
+    - "Campeche"
+    - "Zacatecas"
+
+monitoring:
+  drift_check_interval_days: 7
+  ks_threshold_medium: 0.2
+  psi_threshold_medium: 0.2
+
+# ==================== Fases 1-4: Features Mejorados ====================
+enhanced_features:
+  h3:
+    resolutions: [7, 9]
+    smoothing: 10
+    min_samples_per_cell: 5
+  tourism:
+    hotspot_count: 14
+    max_radius_km: 15
+    decay_distance_km: 50
+  spatial_enhanced:
+    price_ratio_enabled: true
+    idw_enabled: true
+    coast_distance_enabled: true
+    border_distance_enabled: true
+  ndvi:
+    default_radius_m: 500
+    categories:
+      high_green: 0.6
+      moderate: 0.3
+      low_green: 0.15
+      urban_dense: 0.0
+
+# ==================== Nuevas Fuentes de Datos ====================
+data_sources:
+  conapo:
+    table: iainmobiliaria_conapo_marginacion
+    update_frequency: yearly
+    level: ageb
+  denue:
+    table: iainmobiliaria_denue_businesses
+    update_frequency: quarterly
+    naics_categories: [46, 52, 61, 62, 72, 93]
+  sesnsp:
+    table: iainmobiliaria_crime_stats
+    update_frequency: monthly
+    features: [homicide_rate, robbery_rate, crime_trend, safety_score]
+  shf:
+    table: iainmobiliaria_shf_price_index
+    update_frequency: quarterly
+    features: [price_index, price_trend_1yr, price_trend_3yr, price_momentum]
+  cenapred:
+    table: iainmobiliaria_risk_zones
+    features: [seismic_zone, flood_risk, risk_score]
+  sedatu:
+    table: iainmobiliaria_urban_containment
+    features: [urban_zone, urban_zone_score]
+
+# ==================== Fase 4: Modelos Alternativos ====================
+model_alternatives:
+  lightgbm:
+    num_leaves: 63
+    learning_rate: 0.05
+    n_estimators: 500
+    feature_fraction: 0.8
+    bagging_fraction: 0.8
+  optuna:
+    n_trials: 100
+    cv_folds: 5
+    timeout_seconds: 3600
+  property_type_models:
+    min_samples: 200
+    types: [residencial, comercial, terreno, industrial, turistico]
+  seasonal:
+    tourism_only: true
+    seasons:
+      alta: [12, 1, 2, 3, 4]
+      media: [7, 8]
+      baja: [5, 6, 9, 10, 11]

@@ -1,0 +1,145 @@
+<!-- Toggle button (hidden when panel is open) -->
+<button
+  *ngIf="!isVisible"
+  class="filters-toggle-btn"
+  (click)="toggleVisibility()"
+  aria-controls="advanced-filters-panel">
+  <span class="toggle-text">Filtros Avanzados</span>
+  <span *ngIf="activeFiltersCount > 0" class="filter-badge">{{activeFiltersCount}}</span>
+</button>
+
+<!-- Panel -->
+<div class="filters-panel" *ngIf="isVisible" id="advanced-filters-panel" role="dialog" aria-label="Filtros avanzados">
+  <div class="filters-container">
+
+    <!-- Header -->
+    <div class="filters-header">
+      <span class="header-title">Filtros Avanzados</span>
+      <button class="close-btn" (click)="toggleVisibility()" aria-label="Cerrar filtros">&times;</button>
+    </div>
+
+    <!-- Content -->
+    <div class="filters-content">
+
+      <!-- Score de Plusvalia -->
+      <div class="filter-section">
+        <label class="section-label">SCORE DE PLUSVALIA</label>
+        <div class="inline-range">
+          <input
+            type="number"
+            class="form-control-sm"
+            [(ngModel)]="scoreMin"
+            min="0"
+            max="100"
+            placeholder="Min"
+            aria-label="Score minimo">
+          <span class="range-separator">&ndash;</span>
+          <input
+            type="number"
+            class="form-control-sm"
+            [(ngModel)]="scoreMax"
+            min="0"
+            max="100"
+            placeholder="Max"
+            aria-label="Score maximo">
+        </div>
+      </div>
+
+      <hr class="section-divider">
+
+      <!-- Precio Estimado -->
+      <div class="filter-section">
+        <label class="section-label">PRECIO ESTIMADO / M2</label>
+        <div class="inline-range">
+          <input
+            type="number"
+            class="form-control-sm"
+            [(ngModel)]="priceMin"
+            min="0"
+            max="200000"
+            step="1000"
+            placeholder="Min"
+            aria-label="Precio minimo">
+          <span class="range-separator">&ndash;</span>
+          <input
+            type="number"
+            class="form-control-sm"
+            [(ngModel)]="priceMax"
+            min="0"
+            max="200000"
+            step="1000"
+            placeholder="Max"
+            aria-label="Precio maximo">
+        </div>
+        <span class="range-hint">{{formatPrice(priceMin)}} - {{formatPrice(priceMax)}}</span>
+      </div>
+
+      <hr class="section-divider">
+
+      <!-- Potencial -->
+      <div class="filter-section">
+        <label class="section-label">POTENCIAL</label>
+        <div class="toggle-group">
+          <button
+            class="toggle-pill"
+            [class.active]="potentialLevels.bajo"
+            (click)="potentialLevels.bajo = !potentialLevels.bajo">
+            Bajo
+          </button>
+          <button
+            class="toggle-pill"
+            [class.active]="potentialLevels.medio"
+            (click)="potentialLevels.medio = !potentialLevels.medio">
+            Medio
+          </button>
+          <button
+            class="toggle-pill"
+            [class.active]="potentialLevels.alto"
+            (click)="potentialLevels.alto = !potentialLevels.alto">
+            Alto
+          </button>
+        </div>
+      </div>
+
+      <hr class="section-divider">
+
+      <!-- Estado -->
+      <div class="filter-section">
+        <label class="section-label">ESTADO</label>
+        <select
+          class="form-select-sm"
+          [(ngModel)]="selectedState"
+          aria-label="Seleccionar estado">
+          <option value="">Todos los estados</option>
+          <option *ngFor="let state of mexicanStates" [value]="state">{{state}}</option>
+        </select>
+      </div>
+
+      <hr class="section-divider">
+
+      <!-- Ordenar -->
+      <div class="filter-section">
+        <label class="section-label">ORDENAR</label>
+        <select
+          class="form-select-sm"
+          [(ngModel)]="sortOption"
+          aria-label="Ordenar resultados">
+          <option value="score_desc">Score: Mayor a menor</option>
+          <option value="score_asc">Score: Menor a mayor</option>
+          <option value="price_desc">Precio: Mayor a menor</option>
+          <option value="price_asc">Precio: Menor a mayor</option>
+          <option value="city_asc">Ciudad: A - Z</option>
+          <option value="city_desc">Ciudad: Z - A</option>
+        </select>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div class="filters-footer">
+      <button class="btn-secondary" (click)="resetFilters()">Limpiar</button>
+      <button class="btn-primary" (click)="applyFilters()">Aplicar</button>
+    </div>
+
+  </div>
+</div>

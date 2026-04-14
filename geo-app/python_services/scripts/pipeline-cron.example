@@ -1,0 +1,5 @@
+# Weekly model retraining on Monday at 4 AM
+0 4 * * 1 cd /root/geo-app/python_services && python scripts/data_pipeline.py >> /var/log/geo-app-pipeline.log 2>&1
+
+# Daily data validation at 6 AM
+0 6 * * * cd /root/geo-app/python_services && python scripts/data_pipeline.py --steps validate >> /var/log/geo-app-pipeline.log 2>&1

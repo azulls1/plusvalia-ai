@@ -1,0 +1,72 @@
+<!-- Barra de búsqueda -->
+<div class="search-container" role="search" aria-label="Buscar dirección">
+  <div class="search-box">
+    <div class="search-input-wrapper">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        class="search-input"
+        [(ngModel)]="searchQuery"
+        (keypress)="onKeyPress($event)"
+        (blur)="closeResults()"
+        placeholder="Buscar dirección en México..."
+        [disabled]="isSearching"
+        aria-label="Buscar dirección en México"
+        aria-describedby="search-help">
+      
+      <button
+        *ngIf="searchQuery"
+        class="clear-btn"
+        (click)="clearSearch()"
+        type="button"
+        aria-label="Limpiar búsqueda">
+        ✕
+      </button>
+    </div>
+
+    <button
+      class="search-btn"
+      (click)="searchAddress()"
+      [disabled]="isSearching || searchQuery.length < 3"
+      aria-label="Buscar">
+      <span *ngIf="!isSearching">Buscar</span>
+      <span *ngIf="isSearching">
+        <span class="spinner"></span>
+        Buscando...
+      </span>
+    </button>
+  </div>
+
+  <!-- Mensaje de error -->
+  <div *ngIf="errorMessage" class="error-message" role="alert" aria-live="assertive">
+    ⚠️ {{errorMessage}}
+  </div>
+
+  <!-- Resultados de búsqueda -->
+  <div *ngIf="showResults && searchResults.length > 0" class="search-results" role="listbox" aria-label="Resultados de búsqueda">
+    <div class="results-header">
+      <span>{{searchResults.length}} resultado(s) encontrado(s)</span>
+      <button class="close-results-btn" (click)="showResults = false">✕</button>
+    </div>
+    
+    <div class="results-list">
+      <div 
+        *ngFor="let result of searchResults; let i = index"
+        class="result-item"
+        role="option"
+        (mousedown)="selectResult(result)"
+        [class.odd]="i % 2 === 0">
+        
+        <div class="result-icon">{{getResultIcon(result.type)}}</div>
+        
+        <div class="result-content">
+          <div class="result-name">{{formatAddress(result)}}</div>
+          <div class="result-type">{{result.type || 'Ubicación'}}</div>
+        </div>
+        
+        <div class="result-arrow">→</div>
+      </div>
+    </div>
+  </div>
+</div>
+

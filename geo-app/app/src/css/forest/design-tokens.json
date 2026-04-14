@@ -1,0 +1,152 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "forest": {
+    "$type": "color",
+    "$description": "Forest Design System — Color Tokens",
+    "palette": {
+      "forest":    { "$value": "#04202C", "$description": "Primary — titles, buttons, accents" },
+      "evergreen": { "$value": "#304040", "$description": "Secondary — subtitles, dark backgrounds" },
+      "pine":      { "$value": "#5B7065", "$description": "Accent — icons, labels, medium emphasis" },
+      "fog":       { "$value": "#C9D1C8", "$description": "Soft — borders, dividers, placeholders" },
+      "moss":      { "$value": "#9EADA3", "$description": "Muted — disabled text, subtle" },
+      "bark":      { "$value": "#1A3036", "$description": "Dark — strong text alternative" },
+      "midnight":  { "$value": "#021519", "$description": "Darkest — gradient endpoints only" }
+    },
+    "scale": {
+      "50":  { "$value": "#F7F8F7" },
+      "100": { "$value": "#EFF2F0" },
+      "200": { "$value": "#DFE4E0" },
+      "300": { "$value": "#C9D1C8" },
+      "400": { "$value": "#9EADA3" },
+      "500": { "$value": "#7D8F84" },
+      "600": { "$value": "#5B7065" },
+      "700": { "$value": "#304040" },
+      "800": { "$value": "#1A3036" },
+      "900": { "$value": "#04202C" },
+      "950": { "$value": "#021519" }
+    },
+    "semantic": {
+      "success": {
+        "bg":     { "$value": "#ECFDF5" },
+        "text":   { "$value": "#059669" },
+        "border": { "$value": "#BBF7D0" }
+      },
+      "error": {
+        "bg":     { "$value": "#FEF2F2" },
+        "text":   { "$value": "#DC2626" },
+        "border": { "$value": "#FECACA" }
+      },
+      "warning": {
+        "bg":     { "$value": "#FFFBEB" },
+        "text":   { "$value": "#D97706" },
+        "border": { "$value": "#FDE68A" }
+      },
+      "info": {
+        "bg":     { "$value": "#EFF6FF" },
+        "text":   { "$value": "#2563EB" },
+        "border": { "$value": "#BFDBFE" }
+      }
+    }
+  },
+  "typography": {
+    "$type": "fontFamily",
+    "display": { "$value": "'Sora', sans-serif", "$description": "Headings, hero text" },
+    "body":    { "$value": "'DM Sans', system-ui, -apple-system, sans-serif", "$description": "Body text, UI" },
+    "mono":    { "$value": "'JetBrains Mono', ui-monospace, monospace", "$description": "Code, tags, technical data" }
+  },
+  "fontSizes": {
+    "$type": "dimension",
+    "base":    { "$value": "15px", "$description": "Body default" },
+    "xs":      { "$value": "12px", "$description": "Minimum allowed size" },
+    "sm":      { "$value": "14px" },
+    "lg":      { "$value": "18px" },
+    "xl":      { "$value": "20px" },
+    "2xl":     { "$value": "24px" },
+    "3xl":     { "$value": "30px" },
+    "4xl":     { "$value": "36px" },
+    "caption": { "$value": "12px", "$description": "Uppercase stat labels and table headers (minimum allowed)" }
+  },
+  "spacing": {
+    "$type": "dimension",
+    "1":  { "$value": "4px" },
+    "1.5": { "$value": "6px" },
+    "2":  { "$value": "8px" },
+    "2.5": { "$value": "10px" },
+    "3":  { "$value": "12px" },
+    "4":  { "$value": "16px" },
+    "5":  { "$value": "20px" },
+    "6":  { "$value": "24px" },
+    "8":  { "$value": "32px" },
+    "10": { "$value": "40px" },
+    "12": { "$value": "48px" },
+    "16": { "$value": "64px" }
+  },
+  "radii": {
+    "$type": "dimension",
+    "sm":   { "$value": "4px",    "$description": "Small badges" },
+    "md":   { "$value": "8px",    "$description": "Buttons, inputs" },
+    "lg":   { "$value": "12px",   "$description": "Cards, toasts" },
+    "xl":   { "$value": "16px",   "$description": "Sections, hero" },
+    "full": { "$value": "9999px", "$description": "Chips, avatars, pills" }
+  },
+  "shadows": {
+    "$type": "shadow",
+    "soft": {
+      "$value": "0 1px 2px rgba(0,0,0,0.03), 0 4px 12px -2px rgba(0,0,0,0.06), 0 12px 24px -4px rgba(0,0,0,0.04)"
+    },
+    "forest": {
+      "$value": "0 1px 2px rgba(4,32,44,0.04), 0 4px 12px -2px rgba(4,32,44,0.12)"
+    },
+    "forest-lg": {
+      "$value": "0 1px 3px rgba(4,32,44,0.04), 0 8px 24px -4px rgba(4,32,44,0.15), 0 16px 40px -8px rgba(4,32,44,0.08)"
+    }
+  },
+  "animation": {
+    "easing": {
+      "$type": "cubicBezier",
+      "apple":  { "$value": [0.25, 0.1, 0.25, 1], "$description": "Standard — all transitions" },
+      "spring": { "$value": [0.34, 1.56, 0.64, 1], "$description": "Bouncy — buttons, modals" }
+    },
+    "duration": {
+      "$type": "duration",
+      "fast":   { "$value": "150ms", "$description": "Hover, toggle" },
+      "normal": { "$value": "200ms", "$description": "Standard transitions" },
+      "slow":   { "$value": "300ms", "$description": "Entry animations" }
+    },
+    "stagger": {
+      "$type": "duration",
+      "delay": { "$value": "60ms", "$description": "Between staggered children" }
+    }
+  },
+  "glassmorphism": {
+    "standard": {
+      "background": { "$value": "rgba(255, 255, 255, 0.7)" },
+      "blur":       { "$value": "20px" },
+      "saturate":   { "$value": "180%" }
+    },
+    "strong": {
+      "background": { "$value": "rgba(255, 255, 255, 0.85)" },
+      "blur":       { "$value": "24px" },
+      "saturate":   { "$value": "200%" }
+    },
+    "subtle": {
+      "background": { "$value": "rgba(255, 255, 255, 0.5)" },
+      "blur":       { "$value": "12px" },
+      "saturate":   { "$value": "150%" }
+    }
+  },
+  "breakpoints": {
+    "$type": "dimension",
+    "$description": "Reference only — CSS media queries cannot use var()",
+    "sm":  { "$value": "640px",  "$description": "Tablet" },
+    "md":  { "$value": "768px",  "$description": "Tablet landscape" },
+    "lg":  { "$value": "1024px", "$description": "Desktop — sidebar visible" },
+    "xl":  { "$value": "1280px", "$description": "Wide — max-width containers" }
+  },
+  "gradients": {
+    "primary": { "$value": "linear-gradient(135deg, #04202C 0%, #5B7065 100%)" },
+    "accent":  { "$value": "linear-gradient(135deg, #04202C 0%, #304040 50%, #5B7065 100%)" },
+    "hero":    { "$value": "linear-gradient(135deg, #04202C 0%, #5B7065 50%, #C9D1C8 100%)" },
+    "dark":    { "$value": "linear-gradient(135deg, #04202C 0%, #304040 40%, #021519 100%)" }
+  }
+}

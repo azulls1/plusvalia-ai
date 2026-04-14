@@ -1,0 +1,219 @@
+# ================================================================
+# DOCKER COMPOSE PARA BACKEND - Portainer Stack + Traefik
+# ================================================================
+# Configurado para: Traefik + Docker Swarm + Portainer
+# Usa: Portainer → Stacks → Deploy Stack → docker-compose.yml
+# ================================================================
+
+version: '3.8'
+
+services:
+  backend-api:
+    image: backend-inmobiliario:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    # ========================================
+    # VARIABLES DE ENTORNO
+    # ========================================
+    environment:
+      # API Configuration
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - API_WORKERS=4
+
+      # Supabase
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_KEY=${SUPABASE_KEY}
+      - SUPABASE_SERVICE_ROLE_KEY=${SUPABASE_SERVICE_ROLE_KEY}
+
+      # PostgreSQL
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_PORT=${POSTGRES_PORT:-5432}
+      - POSTGRES_DB=${POSTGRES_DB:-postgres}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+
+      # Redis
+      - REDIS_URL=redis://redis:6379/0
+
+      # CORS Origins
+      - ALLOWED_ORIGINS=https://iagentek.com.mx,http://localhost:4200
+
+      # ML Model
+      - MODEL_PATH=/app/ml_model/models
+      - MODEL_RETRAIN_DAYS=30
+
+      # Logging
+      - LOG_LEVEL=INFO
+      - PYTHONUNBUFFERED=1
+
+    depends_on:
+      redis:
+        condition: service_healthy
+    
+    # ========================================
+    # VOLUMENES (PERSISTENCIA)
+    # ========================================
+    volumes:
+      - model_cache:/app/ml_model/models
+      - logs:/app/logs
+      - data:/app/data
+    
+    # ========================================
+    # HEALTH CHECK
+    # ========================================
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    # ========================================
+    # TRAEFIK LABELS
+    # ========================================
+    labels:
+      - traefik.enable=true
+      
+      # Router principal
+      - traefik.http.routers.backend-inmobiliario.rule=Host(`apiinmobiliario.iagentek.com.mx`)
+      - traefik.http.routers.backend-inmobiliario.entrypoints=websecure
+      - traefik.http.routers.backend-inmobiliario.tls.certresolver=letsencryptresolver
+      
+      # Servicio (puerto interno)
+      - traefik.http.services.backend-inmobiliario.loadbalancer.server.port=8000
+      
+      # CORS Middleware
+      - traefik.http.middlewares.backend-inmobiliario-cors.headers.accesscontrolalloworiginlist=https://iagentek.com.mx
+      - traefik.http.middlewares.backend-inmobiliario-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS
+      - traefik.http.middlewares.backend-inmobiliario-cors.headers.accesscontrolmaxage=100
+      - traefik.http.middlewares.backend-inmobiliario-cors.headers.addvaryheader=true
+      
+      # Aplicar middleware CORS
+      - traefik.http.routers.backend-inmobiliario.middlewares=backend-inmobiliario-cors@docker
+      
+      # Deshabilitar /docs en producción (opcional)
+      # - traefik.http.routers.backend-inmobiliario.rule=Host(`apiinmobiliario.iagentek.com.mx`) && PathPrefix(`/docs`)
+      # - traefik.http.routers.backend-inmobiliario.middlewares=auth
+    
+    # ========================================
+    # NETWORK
+    # ========================================
+    networks:
+      - traefik_default
+    
+    # ========================================
+    # DEPLOYMENT (Docker Swarm)
+    # ========================================
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ========================================
+  # REDIS
+  # ========================================
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - traefik_default
+
+  # ========================================
+  # CELERY WORKER
+  # ========================================
+  celery-worker:
+    build: .
+    command: celery -A celery_app worker --loglevel=info --concurrency=2 -Q default,ml,enrichment
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./ml_model/models:/app/ml_model/models
+    networks:
+      - traefik_default
+
+  # ========================================
+  # CELERY BEAT (Scheduler)
+  # ========================================
+  celery-beat:
+    build: .
+    command: celery -A celery_app beat --loglevel=info
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    env_file:
+      - .env
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - traefik_default
+
+  # ========================================
+  # FLOWER (Celery Monitor)
+  # ========================================
+  flower:
+    image: mher/flower:2.0
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks:
+      - traefik_default
+
+# ========================================
+# VOLUMENES
+# ========================================
+volumes:
+  model_cache:
+    driver: local
+  logs:
+    driver: local
+  data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ========================================
+# NETWORKS
+# ========================================
+networks:
+  traefik_default:
+    external: true
+

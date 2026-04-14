@@ -1,0 +1,89 @@
+# ================================================================
+# PROMETHEUS CONFIGURATION — geo-app
+# ================================================================
+# Scrape targets: Backend API metrics, Traefik proxy metrics.
+# Alert rules loaded from alerting-rules.yml.
+# ================================================================
+
+global:
+  # How often Prometheus scrapes targets
+  scrape_interval: 15s
+  # How often rules are evaluated
+  evaluation_interval: 15s
+  # Timeout for scrape requests
+  scrape_timeout: 10s
+  # Labels added to all time series and alerts
+  external_labels:
+    environment: "production"
+    project: "geo-app"
+
+# ================================================================
+# ALERTING — Alertmanager integration
+# ================================================================
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - "alertmanager:9093"
+      timeout: 10s
+
+# ================================================================
+# RULE FILES
+# ================================================================
+rule_files:
+  - "alerting-rules.yml"
+
+# ================================================================
+# SCRAPE CONFIGURATIONS
+# ================================================================
+scrape_configs:
+
+  # --------------------------------------------------------------
+  # Prometheus self-monitoring
+  # --------------------------------------------------------------
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+        labels:
+          service: "prometheus"
+
+  # --------------------------------------------------------------
+  # Backend API — FastAPI metrics
+  # --------------------------------------------------------------
+  # Expects the backend to expose /metrics (e.g., via prometheus-fastapi-instrumentator)
+  - job_name: "backend-api"
+    metrics_path: /metrics
+    scrape_interval: 15s
+    static_configs:
+      - targets: ["backend-api:8000"]
+        labels:
+          service: "backend-api"
+          team: "backend"
+    # Relabel to add instance name
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: "backend-api"
+
+  # --------------------------------------------------------------
+  # Traefik — Reverse proxy metrics
+  # --------------------------------------------------------------
+  - job_name: "traefik"
+    metrics_path: /metrics
+    scrape_interval: 15s
+    static_configs:
+      - targets: ["traefik:8082"]
+        labels:
+          service: "traefik"
+          team: "infra"
+
+  # --------------------------------------------------------------
+  # Node Exporter — Host-level metrics (optional)
+  # --------------------------------------------------------------
+  # Uncomment if you deploy node-exporter on the host:
+  # - job_name: "node-exporter"
+  #   static_configs:
+  #     - targets: ["node-exporter:9100"]
+  #       labels:
+  #         service: "node-exporter"
+  #         team: "infra"

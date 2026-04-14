@@ -1,0 +1,126 @@
+<!-- Botón flotante para exportar -->
+<button
+  class="export-toggle-btn"
+  (click)="toggleVisibility()"
+  [class.active]="isVisible"
+  [disabled]="isExporting"
+  [attr.aria-expanded]="isVisible"
+  aria-controls="export-menu-panel"
+  aria-label="Exportar reportes">
+  <span class="export-icon">📥</span>
+  <span class="export-text">Exportar</span>
+</button>
+
+<!-- Menú de opciones de exportación -->
+<div class="export-menu" *ngIf="isVisible" id="export-menu-panel" role="dialog" aria-label="Opciones de exportación">
+  <div class="export-container">
+    
+    <!-- Encabezado -->
+    <div class="export-header">
+      <h4>📥 Exportar Reportes</h4>
+      <button class="close-btn" (click)="toggleVisibility()">✕</button>
+    </div>
+
+    <!-- Descripción -->
+    <div class="export-description">
+      <p>Exporta los datos de predicciones en diferentes formatos</p>
+      <div class="stats-badge">
+        <strong>{{predictions.length | number}}</strong> predicciones disponibles
+      </div>
+    </div>
+
+    <!-- Opciones de exportación -->
+    <div class="export-options">
+      
+      <!-- CSV - Predicciones completas -->
+      <button
+        class="export-option"
+        (click)="exportToCSV()"
+        [disabled]="isExporting"
+        aria-label="Exportar CSV con todas las predicciones">
+        <div class="option-icon">📊</div>
+        <div class="option-content">
+          <h5>CSV - Todas las Predicciones</h5>
+          <p>Exporta todas las predicciones con coordenadas, score y precio</p>
+        </div>
+        <div class="option-arrow">→</div>
+      </button>
+
+      <!-- CSV - Top 10 -->
+      <button
+        class="export-option"
+        (click)="exportTop10ToCSV()"
+        [disabled]="isExporting"
+        aria-label="Exportar CSV con top 10 oportunidades">
+        <div class="option-icon">🏆</div>
+        <div class="option-content">
+          <h5>CSV - Top 10 Oportunidades</h5>
+          <p>Las 10 mejores oportunidades con enlaces a Google Maps</p>
+        </div>
+        <div class="option-arrow">→</div>
+      </button>
+
+      <!-- CSV - Estadísticas por ciudad -->
+      <button
+        class="export-option"
+        (click)="exportStatsToCSV()"
+        [disabled]="isExporting"
+        aria-label="Exportar CSV con estadísticas por ciudad">
+        <div class="option-icon">🏙️</div>
+        <div class="option-content">
+          <h5>CSV - Estadísticas por Ciudad</h5>
+          <p>Resumen de predicciones y precios por ciudad</p>
+        </div>
+        <div class="option-arrow">→</div>
+      </button>
+
+      <!-- Reporte Completo (TXT) -->
+      <button
+        class="export-option featured"
+        (click)="exportCompleteReport()"
+        [disabled]="isExporting"
+        aria-label="Exportar reporte completo en formato texto">
+        <div class="option-icon">📄</div>
+        <div class="option-content">
+          <h5>Reporte Completo (TXT)</h5>
+          <p>Reporte ejecutivo con análisis completo y top 10</p>
+        </div>
+        <div class="option-arrow">→</div>
+      </button>
+
+      <!-- Copiar al portapapeles -->
+      <button
+        class="export-option secondary"
+        (click)="copyStatsToClipboard()"
+        [disabled]="isExporting"
+        aria-label="Copiar estadísticas al portapapeles">
+        <div class="option-icon">📋</div>
+        <div class="option-content">
+          <h5>Copiar Estadísticas</h5>
+          <p>Copia un resumen al portapapeles para compartir</p>
+        </div>
+        <div class="option-arrow">→</div>
+      </button>
+
+    </div>
+
+    <!-- Indicador de carga -->
+    <div class="export-loading" *ngIf="isExporting" role="alert" aria-live="polite" aria-busy="true">
+      <div class="spinner"></div>
+      <p>Exportando datos...</p>
+    </div>
+
+    <!-- Status message -->
+    <div class="export-status" *ngIf="statusMessage" role="status" aria-live="polite">
+      <p>{{statusMessage}}</p>
+    </div>
+
+    <!-- Nota informativa -->
+    <div class="export-note">
+      <span class="note-icon">💡</span>
+      <p>Los archivos se descargarán automáticamente en tu carpeta de Descargas</p>
+    </div>
+
+  </div>
+</div>
+

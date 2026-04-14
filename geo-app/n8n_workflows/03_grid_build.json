@@ -1,0 +1,116 @@
+{
+  "name": "Inmobiliaria - Rebuild Grid",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "grid-build",
+        "options": {}
+      },
+      "id": "webhook-3",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "step",
+              "name": "step",
+              "value": "={{ $json.step || 0.005 }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-step-1",
+      "name": "Set Step",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM rebuild_grid({{ $json.step }})",
+        "options": {}
+      },
+      "id": "postgres-rebuild-1",
+      "name": "Call rebuild_grid Function",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.4,
+      "position": [650, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-creds",
+          "name": "PostgreSQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"ok\": true, \"tiles\": $json.tiles_created, \"comparables_used\": $json.comparables_used, \"execution_time_ms\": $json.execution_time_ms, \"message\": \"Grilla recalculada exitosamente\" } }}"
+      },
+      "id": "respond-3",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set Step",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Step": {
+      "main": [
+        [
+          {
+            "node": "Call rebuild_grid Function",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call rebuild_grid Function": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2025-10-25T00:00:00.000Z",
+      "updatedAt": "2025-10-25T00:00:00.000Z",
+      "id": "inmobiliaria",
+      "name": "Inmobiliaria"
+    }
+  ],
+  "pinData": {},
+  "versionId": "1"
+}
+

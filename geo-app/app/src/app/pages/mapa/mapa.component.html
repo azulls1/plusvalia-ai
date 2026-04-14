@@ -1,0 +1,249 @@
+<!-- src/app/pages/mapa/mapa.component.html - Template del componente de mapa -->
+<a class="visually-hidden-focusable" href="#map">Saltar al mapa</a>
+<div class="wrapper" role="main" aria-label="Análisis de mercado inmobiliario">
+  <div class="content">
+    <div class="container-fluid map-container">
+      <div class="row row-content">
+      
+      <!-- Panel lateral izquierdo -->
+      <div class="col-md-3 p-0 d-flex flex-column" style="background:#f8fafc;border-right:1px solid #e2e8f0;height:calc(100vh - 70px);overflow-y:auto;">
+
+        <!-- Header -->
+        <div class="d-flex align-items-center px-3 py-2" style="background:#04202C;flex-shrink:0;">
+          <img src="assets/icons/logo-iagentek.webp" alt="Logo" class="me-2" style="height:28px;">
+          <div>
+            <div class="fw-bold" style="font-family:'Sora',sans-serif;color:#fff;font-size:0.9em;line-height:1.2;">IAInmobiliaria</div>
+            <div style="font-size:0.6em;color:#9EADA3;">Analisis de Mercado con IA</div>
+          </div>
+        </div>
+
+        <!-- Alerta -->
+        <div *ngIf="message" class="mx-3 mt-2 alert py-1 px-2" style="font-size:0.8em;" role="alert" [ngClass]="{
+          'alert-success': messageType === 'success',
+          'alert-danger': messageType === 'error',
+          'alert-info': messageType === 'info'
+        }">{{ message }}</div>
+
+        <!-- Contenido principal -->
+        <div class="px-3 py-2 flex-grow-1">
+
+          <!-- Estadísticas nacionales (siempre visible) -->
+          <div class="mb-2">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="fw-bold" style="font-size:0.85em;color:#1e293b;">Resumen Nacional</span>
+              <span *ngIf="loading" class="spinner-border spinner-border-sm text-primary" role="status"></span>
+            </div>
+            <div class="row g-1">
+              <div class="col-6">
+                <div class="summary-card" style="background:#e8f5e9;border-left:3px solid #1b5e20;" (click)="showSummaryPopup('estados')">
+                  <div class="fw-bold" style="font-size:1.1em;color:#1b5e20;">32</div>
+                  <div style="font-size:0.65em;color:#666;">Estados</div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="summary-card" style="background:#e3f2fd;border-left:3px solid #1565c0;" (click)="showSummaryPopup('predicciones')">
+                  <div class="fw-bold" style="font-size:1.1em;color:#1565c0;">{{ predictions.length | number }}</div>
+                  <div style="font-size:0.65em;color:#666;">Predicciones</div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="summary-card" style="background:#fff3e0;border-left:3px solid #e65100;" (click)="showSummaryPopup('precio')">
+                  <div class="fw-bold" style="font-size:0.95em;color:#e65100;">${{ avgNationalPrice | number:'1.0-0' }}</div>
+                  <div style="font-size:0.65em;color:#666;">Precio/m²</div>
+                </div>
+              </div>
+              <div class="col-6">
+                <div class="summary-card" style="background:#f3e5f5;border-left:3px solid #7b1fa2;" (click)="showSummaryPopup('score')">
+                  <div class="fw-bold" style="font-size:0.95em;color:#7b1fa2;">{{ avgNationalScore | number:'1.1-1' }}</div>
+                  <div style="font-size:0.65em;color:#666;">Score/100</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Modal de detalle -->
+            <div *ngIf="summaryPopup" class="summary-modal-overlay" (click)="summaryPopup = ''">
+              <div class="summary-modal" (click)="$event.stopPropagation()">
+                <div class="summary-modal-header">
+                  <h6 class="mb-0 fw-bold">{{ summaryPopupTitle }}</h6>
+                  <button class="btn-close btn-close-white" style="font-size:0.7em;" (click)="summaryPopup = ''"></button>
+                </div>
+                <div class="summary-modal-body" [innerHTML]="summaryPopupContent"></div>
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-2">
+
+          <!-- Modo de visualización -->
+          <div class="mb-2">
+            <div class="btn-group w-100 btn-group-sm" role="group">
+              <button type="button" class="btn"
+                [class.btn-primary]="viewMode === 'predictions'"
+                [class.btn-outline-secondary]="viewMode !== 'predictions'"
+                (click)="switchViewMode('predictions')" [disabled]="loading">
+                Plusvalia
+              </button>
+              <button type="button" class="btn"
+                [class.btn-primary]="viewMode === 'tiles'"
+                [class.btn-outline-secondary]="viewMode !== 'tiles'"
+                (click)="switchViewMode('tiles')" [disabled]="loading">
+                Precios/m²
+              </button>
+            </div>
+          </div>
+
+          <!-- Filtro por estado -->
+          <div class="mb-2" *ngIf="viewMode === 'predictions'">
+            <select class="form-select form-select-sm" [(ngModel)]="selectedState"
+              (change)="filterByCity(selectedState)" [disabled]="loading">
+              <option value="">Todos los estados</option>
+              <option *ngFor="let state of mexicanStates" [value]="state">{{ state }}</option>
+            </select>
+          </div>
+
+          <hr class="my-2">
+
+          <!-- Ranking de ciudades -->
+          <div *ngIf="citiesStats.length > 0" class="mb-2">
+            <div class="fw-bold mb-1" style="font-size:0.8em;color:#1e293b;">Top Ciudades</div>
+            <div style="max-height:240px;overflow-y:auto;">
+              <div *ngFor="let city of citiesStats; trackBy: trackByCity"
+                class="d-flex justify-content-between align-items-center py-1 px-2 rounded mb-1"
+                style="cursor:pointer;font-size:0.78em;border-left:3px solid;background:#fff;"
+                [style.border-left-color]="getColorByScore(city.avg_plusvalia_score)"
+                (click)="filterByCity(city.city)">
+                <div>
+                  <div class="fw-semibold">{{ city.city }}</div>
+                  <div style="color:#888;font-size:0.9em;">${{ city.avg_price_m2 | number:'1.0-0' }}/m²</div>
+                </div>
+                <span class="badge rounded-pill" style="background:#e8f5e9;color:#1b5e20;font-size:0.85em;">
+                  {{ city.avg_plusvalia_score | number:'1.0-0' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-2">
+
+          <!-- Herramientas (colapsable) -->
+          <details class="mb-2">
+            <summary class="fw-bold" style="font-size:0.8em;color:#1e293b;cursor:pointer;">Herramientas</summary>
+            <div class="mt-2">
+              <app-filters-panel
+                (filtersApplied)="onFiltersApplied($event)"
+                (rebuildGrid)="onRebuildGrid()"
+                [disabled]="loading">
+              </app-filters-panel>
+
+              <div class="mt-2">
+                <app-file-upload [disabled]="loading" (fileUploaded)="onFileUploaded($event)"></app-file-upload>
+              </div>
+
+              <button type="button" class="btn btn-sm btn-outline-secondary w-100 mt-2"
+                (click)="clearCache()" [disabled]="loading">
+                Actualizar Datos
+              </button>
+            </div>
+          </details>
+
+        </div>
+      </div>
+
+    <!-- Área del mapa -->
+    <div class="col-md-9 p-0">
+      <div id="map" class="h-100" role="application" aria-label="Mapa interactivo de análisis inmobiliario" tabindex="0">
+        <!-- Buscador de direcciones (flotante) -->
+        <app-address-search 
+          (locationSelected)="onLocationSelected($event)">
+        </app-address-search>
+        
+        <!-- Filtros avanzados (flotante) -->
+        <app-advanced-filters
+          (filtersChanged)="onAdvancedFiltersChanged($event)">
+        </app-advanced-filters>
+      </div>
+      
+      <!-- Stats, Export, Chat removidos — funcionalidad en sidebar y filtros avanzados -->
+    </div>
+
+      </div>
+    </div>
+  </div>
+  
+  <!-- Footer -->
+  <footer class="dark-surface text-white" role="contentinfo">
+    <div class="container-fluid">
+
+      <!-- Fila principal del footer -->
+      <div class="row py-4">
+
+        <!-- Columna 1: Marca -->
+        <div class="col-md-3 mb-3 mb-md-0">
+          <div class="d-flex align-items-center mb-2">
+            <img src="assets/icons/logo_ia_withe.webp" alt="IAInmobiliaria Logo" style="height: 36px; width: auto;" class="me-2">
+            <h6 class="mb-0 fw-bold" style="font-family: 'Sora', sans-serif;">IAInmobiliaria</h6>
+          </div>
+          <p class="mb-0" style="font-size: 0.8em; color: #9EADA3; line-height: 1.5;">
+            Plataforma de análisis de mercado inmobiliario potenciada con Inteligencia Artificial para la evaluación de terrenos en México.
+          </p>
+        </div>
+
+        <!-- Columna 2: Legal -->
+        <div class="col-md-3 mb-3 mb-md-0">
+          <h6 class="fw-bold mb-2" style="font-size: 0.85em; color: #C9D1C8;">Legal</h6>
+          <ul class="list-unstyled mb-0" style="font-size: 0.8em;">
+            <li class="mb-1"><a href="javascript:void(0)" class="footer-link">Términos y Condiciones</a></li>
+            <li class="mb-1"><a href="javascript:void(0)" class="footer-link">Aviso de Privacidad</a></li>
+            <li class="mb-1"><a href="javascript:void(0)" class="footer-link">Política de Cookies</a></li>
+            <li class="mb-1"><a href="javascript:void(0)" class="footer-link">Uso de Datos INEGI</a></li>
+          </ul>
+        </div>
+
+        <!-- Columna 3: Tecnologías -->
+        <div class="col-md-3 mb-3 mb-md-0">
+          <h6 class="fw-bold mb-2" style="font-size: 0.85em; color: #C9D1C8;">Tecnologías</h6>
+          <div class="d-flex flex-wrap gap-1">
+            <span class="badge">Angular</span>
+            <span class="badge">FastAPI</span>
+            <span class="badge">PostgreSQL</span>
+            <span class="badge">Supabase</span>
+            <span class="badge">Scikit-Learn</span>
+            <span class="badge">XGBoost</span>
+            <span class="badge">OpenStreetMap</span>
+            <span class="badge">INEGI</span>
+            <span class="badge">Leaflet</span>
+            <span class="badge">n8n</span>
+            <span class="badge">OpenAI</span>
+          </div>
+        </div>
+
+        <!-- Columna 4: Contacto -->
+        <div class="col-md-3">
+          <h6 class="fw-bold mb-2" style="font-size: 0.85em; color: #C9D1C8;">Contacto</h6>
+          <ul class="list-unstyled mb-0" style="font-size: 0.8em;">
+            <li class="mb-1"><a href="https://iagentek.com.mx" target="_blank" rel="noopener" class="footer-link">iagentek.com.mx</a></li>
+            <li class="mb-1"><a href="mailto:contacto@iagentek.com.mx" class="footer-link">contacto@iagentek.com.mx</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Línea divisoria -->
+      <hr style="border-color: rgba(255,255,255,0.1); margin: 0;">
+
+      <!-- Fila inferior: Copyright -->
+      <div class="row py-3">
+        <div class="col-md-6">
+          <small style="color: #9EADA3; font-size: 0.75em;">
+            &copy; {{ currentYear }} IAInmobiliaria by <strong>IAgentek</strong>. Todos los derechos reservados.
+          </small>
+        </div>
+        <div class="col-md-6 text-md-end">
+          <small style="color: #9EADA3; font-size: 0.75em;">
+            Desarrollado por <strong>Samael Hernandez</strong> &mdash; Hecho en México
+          </small>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+</div>

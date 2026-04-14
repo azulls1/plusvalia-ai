@@ -1,0 +1,83 @@
+# ================================================================
+# DOCKER IGNORE - Backend
+# ================================================================
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Testing
+.pytest_cache/
+coverage/
+htmlcov/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Git
+.git/
+.gitignore
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Jupyter notebooks
+*.ipynb
+.ipynb_checkpoints/
+
+# Data files (grandes)
+data/inegi/
+*.csv.bak
+*.pkl.bak
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Node modules (si hay algo de JS)
+node_modules/
+
+# Dockerfiles adicionales
+Dockerfile.dev
+docker-compose.dev.yml
+docker-compose.override.yml
+
+# No copiar archivos innecesarios
+.railway.json
+.vscode/
+.github/
+

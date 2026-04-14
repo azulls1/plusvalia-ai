@@ -1,0 +1,85 @@
+<!-- src/app/components/filters-panel/filters-panel.component.html - Template del panel de filtros -->
+<div class="card" role="form" aria-label="Control de amenidades">
+  <div class="card-header bg-success text-white py-2">
+    <h6 class="mb-0">Control de Amenidades</h6>
+  </div>
+  <div class="card-body py-2 px-3">
+
+    <!-- Mensaje de validación inline -->
+    <div *ngIf="validationMessage" class="alert alert-warning alert-dismissible py-1 px-2 mb-2" role="alert">
+      <small>{{ validationMessage }}</small>
+      <button type="button" class="btn-close btn-close-sm p-1" (click)="clearValidation()" aria-label="Cerrar"></button>
+    </div>
+
+    <!-- Tipos de amenidades -->
+    <div class="mb-2">
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <label class="form-label fw-bold mb-0 small">Tipos de Amenidades</label>
+        <div>
+          <button 
+            class="btn btn-sm btn-outline-secondary me-1"
+            (click)="toggleAllAmenities(true)"
+            [disabled]="disabled">
+            Todos
+          </button>
+          <button 
+            class="btn btn-sm btn-outline-secondary"
+            (click)="toggleAllAmenities(false)"
+            [disabled]="disabled">
+            Ninguno
+          </button>
+        </div>
+      </div>
+
+      <!-- Lista de checkboxes -->
+      <div class="amenities-list">
+        <label
+          *ngFor="let type of amenityTypes; trackBy: trackByAmenityValue"
+          class="checkbox-label"
+          [class.selected]="type.checked">
+          <input 
+            type="checkbox"
+            [(ngModel)]="type.checked"
+            [id]="'check-' + type.value"
+            [disabled]="disabled">
+          <span class="checkbox-custom"></span>
+          <span class="checkbox-text">{{ type.label }}</span>
+        </label>
+      </div>
+    </div>
+
+    <hr class="my-2">
+
+    <!-- Botones de acción -->
+    <div class="d-grid gap-1">
+
+      <!-- Botón aplicar configuración de amenidades -->
+      <button
+        class="btn btn-sm btn-primary"
+        (click)="applyFilters()"
+        [disabled]="disabled"
+        aria-label="Aplicar Amenidades">
+        Aplicar Amenidades
+      </button>
+
+      <!-- Botón recalcular grilla -->
+      <button
+        class="btn btn-sm btn-info"
+        (click)="recalculateGrid()"
+        [disabled]="disabled"
+        aria-label="Recalcular Grid de Precios">
+        Recalcular Grid de Precios
+      </button>
+
+      <!-- Botón limpiar -->
+      <button
+        class="btn btn-sm btn-secondary"
+        (click)="clearFilters()"
+        [disabled]="disabled"
+        aria-label="Limpiar Todo">
+        Limpiar Todo
+      </button>
+    </div>
+
+  </div>
+</div>

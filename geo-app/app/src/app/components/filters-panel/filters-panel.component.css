@@ -1,0 +1,97 @@
+/* filters-panel.component.css — Forest Design System */
+
+.card {
+  box-shadow: var(--shadow-soft);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.card-header {
+  font-weight: 600;
+}
+
+.amenities-list {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 0.5rem;
+  background-color: var(--color-bg-muted);
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: white;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--duration-normal) ease;
+  position: relative;
+  margin: 0;
+}
+
+.checkbox-label:hover {
+  border-color: var(--color-text-primary);
+  background: var(--color-bg-hover);
+}
+
+.checkbox-label.selected {
+  border-color: var(--color-text-primary);
+  background: var(--color-bg-hover);
+}
+
+.checkbox-label input[type="checkbox"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  margin: 0;
+}
+
+.checkbox-custom {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-text-primary);
+  border-radius: var(--radius-sm);
+  position: relative;
+  transition: all var(--duration-normal) ease;
+  flex-shrink: 0;
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkbox-custom {
+  background: var(--color-text-primary);
+}
+
+.checkbox-label input[type="checkbox"]:checked + .checkbox-custom::after {
+  content: '✓';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.checkbox-text {
+  font-size: 13px;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.form-control:disabled, .btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.d-grid.gap-2 {
+  gap: 0.5rem;
+}
+
+.btn-sm {
+  font-size: 12px;
+  padding: 0.25rem 0.5rem;
+}

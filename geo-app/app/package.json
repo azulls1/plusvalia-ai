@@ -1,0 +1,53 @@
+{
+  "name": "geo-app",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "ng serve",
+    "build": "ng build --configuration production",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "test:ci": "ng test --no-watch --browsers=ChromeHeadless --code-coverage",
+    "lint": "ng lint",
+    "e2e": "cypress run",
+    "e2e:open": "cypress open"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "~16.2.12",
+    "@angular/common": "~16.2.12",
+    "@angular/compiler": "~16.2.12",
+    "@angular/core": "~16.2.12",
+    "@angular/forms": "~16.2.12",
+    "@angular/platform-browser": "~16.2.12",
+    "@angular/platform-browser-dynamic": "~16.2.12",
+    "@angular/router": "~16.2.12",
+    "@supabase/supabase-js": "^2.47.12",
+    "bootstrap": "5.3.3",
+    "leaflet": "^1.9.4",
+    "leaflet.heat": "^0.2.0",
+    "leaflet.markercluster": "^1.5.3",
+    "rxjs": "~7.8.1",
+    "tslib": "^2.7.0",
+    "zone.js": "~0.14.10"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "~16.2.12",
+    "@angular/cli": "~16.2.12",
+    "@angular/compiler-cli": "~16.2.12",
+    "@types/jasmine": "~4.3.0",
+    "@types/leaflet": "^1.9.8",
+    "@types/leaflet.markercluster": "^1.5.4",
+    "@types/node": "^20.10.0",
+    "autoprefixer": "^10.4.16",
+    "cypress": "^15.13.0",
+    "jasmine-core": "~4.6.0",
+    "karma": "~6.4.0",
+    "karma-chrome-launcher": "~3.2.0",
+    "karma-coverage": "~2.2.0",
+    "karma-jasmine": "~5.1.0",
+    "karma-jasmine-html-reporter": "~2.1.0",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.3.6",
+    "typescript": "~5.1.3"
+  }
+}

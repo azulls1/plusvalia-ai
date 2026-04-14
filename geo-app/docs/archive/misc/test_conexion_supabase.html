@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test de Conexión Supabase</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .container {
+            background: #2d2d2d;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #3ecf8e;
+            margin-top: 0;
+        }
+        .test-item {
+            margin: 20px 0;
+            padding: 15px;
+            background: #1a1a1a;
+            border-radius: 4px;
+            border-left: 4px solid #666;
+        }
+        .test-item.loading {
+            border-left-color: #ffa500;
+        }
+        .test-item.success {
+            border-left-color: #3ecf8e;
+        }
+        .test-item.error {
+            border-left-color: #ff4444;
+        }
+        .status {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .details {
+            font-size: 14px;
+            color: #aaa;
+            margin-top: 10px;
+        }
+        button {
+            background: #3ecf8e;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #2fb574;
+        }
+        button:disabled {
+            background: #666;
+            cursor: not-allowed;
+        }
+        pre {
+            background: #000;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .emoji {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Test de Conexión a Supabase</h1>
+        <p>Proyecto: Análisis de Mercado y Evaluación de Terrenos</p>
+        
+        <button id="runTests" onclick="runAllTests()">▶️ Ejecutar Pruebas</button>
+        
+        <div id="results"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Configuración de Supabase
+        const SUPABASE_URL = 'https://iagenteksupabase.iagentek.com.mx';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogImFub24iLAogICJpc3MiOiAic3VwYWJhc2UiLAogICJpYXQiOiAxNzE1MDUwODAwLAogICJleHAiOiAxODcyODE3MjAwCn0.23LYnOepZ9yTJObLFoTnszO5WdHpbekvgwMt8bn2o_k';
+
+        let supabase;
+        const resultsDiv = document.getElementById('results');
+
+        function addTestResult(title, status, details = '', data = null) {
+            const statusClass = status === 'loading' ? 'loading' : 
+                              status === 'success' ? 'success' : 'error';
+            const emoji = status === 'loading' ? '⏳' : 
+                         status === 'success' ? '✅' : '❌';
+            
+            const testDiv = document.createElement('div');
+            testDiv.className = `test-item ${statusClass}`;
+            testDiv.innerHTML = `
+                <div class="status"><span class="emoji">${emoji}</span>${title}</div>
+                ${details ? `<div class="details">${details}</div>` : ''}
+                ${data ? `<pre>${JSON.stringify(data, null, 2)}</pre>` : ''}
+            `;
+            resultsDiv.appendChild(testDiv);
+            return testDiv;
+        }
+
+        async function runAllTests() {
+            const button = document.getElementById('runTests');
+            button.disabled = true;
+            resultsDiv.innerHTML = '';
+
+            try {
+                // Test 1: Inicializar cliente Supabase
+                const test1 = addTestResult('Test 1: Inicializar Cliente Supabase', 'loading', 'Creando instancia del cliente...');
+                try {
+                    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                    test1.className = 'test-item success';
+                    test1.innerHTML = `
+                        <div class="status"><span class="emoji">✅</span>Test 1: Inicializar Cliente Supabase</div>
+                        <div class="details">Cliente creado correctamente</div>
+                    `;
+                } catch (error) {
+                    test1.className = 'test-item error';
+                    test1.innerHTML = `
+                        <div class="status"><span class="emoji">❌</span>Test 1: Inicializar Cliente Supabase</div>
+                        <div class="details">Error: ${error.message}</div>
+                    `;
+                    button.disabled = false;
+                    return;
+                }
+
+                // Test 2: Verificar tabla iainmobiliaria_comparables
+                const test2 = addTestResult('Test 2: Tabla iainmobiliaria_comparables', 'loading', 'Consultando tabla...');
+                try {
+                    const { data, error, count } = await supabase
+                        .from('iainmobiliaria_comparables')
+                        .select('*', { count: 'exact', head: true });
+                    
+                    if (error) throw error;
+                    
+                    test2.className = 'test-item success';
+                    test2.innerHTML = `
+                        <div class="status"><span class="emoji">✅</span>Test 2: Tabla iainmobiliaria_comparables</div>
+                        <div class="details">Conexión exitosa. Registros: ${count || 0}</div>
+                    `;
+                } catch (error) {
+                    test2.className = 'test-item error';
+                    test2.innerHTML = `
+                        <div class="status"><span class="emoji">❌</span>Test 2: Tabla iainmobiliaria_comparables</div>
+                        <div class="details">Error: ${error.message}</div>
+                    `;
+                }
+
+                // Test 3: Verificar tabla iainmobiliaria_amenities
+                const test3 = addTestResult('Test 3: Tabla iainmobiliaria_amenities', 'loading', 'Consultando tabla...');
+                try {
+                    const { data, error, count } = await supabase
+                        .from('iainmobiliaria_amenities')
+                        .select('*', { count: 'exact', head: true });
+                    
+                    if (error) throw error;
+                    
+                    test3.className = 'test-item success';
+                    test3.innerHTML = `
+                        <div class="status"><span class="emoji">✅</span>Test 3: Tabla iainmobiliaria_amenities</div>
+                        <div class="details">Conexión exitosa. Registros: ${count || 0}</div>
+                    `;
+                } catch (error) {
+                    test3.className = 'test-item error';
+                    test3.innerHTML = `
+                        <div class="status"><span class="emoji">❌</span>Test 3: Tabla iainmobiliaria_amenities</div>
+                        <div class="details">Error: ${error.message}</div>
+                    `;
+                }
+
+                // Test 4: Verificar tabla iainmobiliaria_grid_tiles
+                const test4 = addTestResult('Test 4: Tabla iainmobiliaria_grid_tiles', 'loading', 'Consultando tabla...');
+                try {
+                    const { data, error, count } = await supabase
+                        .from('iainmobiliaria_grid_tiles')
+                        .select('*', { count: 'exact', head: true });
+                    
+                    if (error) throw error;
+                    
+                    test4.className = 'test-item success';
+                    test4.innerHTML = `
+                        <div class="status"><span class="emoji">✅</span>Test 4: Tabla iainmobiliaria_grid_tiles</div>
+                        <div class="details">Conexión exitosa. Registros: ${count || 0}</div>
+                    `;
+                } catch (error) {
+                    test4.className = 'test-item error';
+                    test4.innerHTML = `
+                        <div class="status"><span class="emoji">❌</span>Test 4: Tabla iainmobiliaria_grid_tiles</div>
+                        <div class="details">Error: ${error.message}</div>
+                    `;
+                }
+
+                // Test 5: Leer datos de prueba (si existen)
+                const test5 = addTestResult('Test 5: Leer Datos de Comparables', 'loading', 'Obteniendo primeros 5 registros...');
+                try {
+                    const { data, error } = await supabase
+                        .from('iainmobiliaria_comparables')
+                        .select('id, title, price_m2, city, state')
+                        .limit(5);
+                    
+                    if (error) throw error;
+                    
+                    test5.className = 'test-item success';
+                    test5.innerHTML = `
+                        <div class="status"><span class="emoji">✅</span>Test 5: Leer Datos de Comparables</div>
+                        <div class="details">Se obtuvieron ${data.length} registros</div>
+                        ${data.length > 0 ? `<pre>${JSON.stringify(data, null, 2)}</pre>` : ''}
+                    `;
+                } catch (error) {
+                    test5.className = 'test-item error';
+                    test5.innerHTML = `
+                        <div class="status"><span class="emoji">❌</span>Test 5: Leer Datos de Comparables</div>
+                        <div class="details">Error: ${error.message}</div>
+                    `;
+                }
+
+                // Test 6: Verificar políticas RLS
+                const test6 = addTestResult('Test 6: Políticas RLS (Lectura Pública)', 'loading', 'Verificando permisos...');
+                try {
+                    const { data, error } = await supabase
+                        .from('iainmobiliaria_comparables')
+                        .select('count')
+                        .limit(1);
+                    
+                    if (error) throw error;
+                    
+                    test6.className = 'test-item success';
+                    test6.innerHTML = `
+                        <div class="status"><span class="emoji">✅</span>Test 6: Políticas RLS (Lectura Pública)</div>
+                        <div class="details">Las políticas RLS permiten lectura con anon key ✓</div>
+                    `;
+                } catch (error) {
+                    test6.className = 'test-item error';
+                    test6.innerHTML = `
+                        <div class="status"><span class="emoji">❌</span>Test 6: Políticas RLS (Lectura Pública)</div>
+                        <div class="details">Error: ${error.message}</div>
+                    `;
+                }
+
+                // Resumen final
+                addTestResult('🎉 Pruebas Completadas', 'success', 'Todas las pruebas de conexión han finalizado. Revisa los resultados arriba.');
+
+            } catch (error) {
+                addTestResult('Error General', 'error', error.message);
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        // Ejecutar automáticamente al cargar
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(runAllTests, 500);
+        });
+    </script>
+</body>
+</html>
+

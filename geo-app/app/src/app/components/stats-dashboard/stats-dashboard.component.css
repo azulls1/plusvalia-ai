@@ -1,0 +1,373 @@
+/* stats-dashboard.component.css — Forest Design System */
+
+/* ─── Toggle Button ─── */
+.stats-toggle-btn {
+  position: fixed;
+  bottom: 140px;
+  right: 20px;
+  z-index: 997;
+  background: var(--color-text-primary);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(4, 32, 44, 0.25);
+  transition: all 0.3s var(--ease-apple);
+}
+
+.stats-toggle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(4, 32, 44, 0.35);
+}
+
+.stats-toggle-btn.active {
+  background: var(--gradient-primary);
+}
+
+/* ─── Dashboard Panel ─── */
+.stats-dashboard {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 70px;
+  width: 450px;
+  background: white;
+  box-shadow: -4px 0 24px rgba(4, 32, 44, 0.12);
+  z-index: 1000;
+  overflow-y: auto;
+  animation: slideIn 0.3s var(--ease-apple);
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+.stats-container {
+  padding: 20px;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Header ─── */
+.stats-header {
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--color-text-primary);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.stats-header h3 {
+  margin: 0 0 5px 0;
+  font-family: 'Sora', sans-serif;
+  color: var(--color-text-primary);
+  font-size: 18px;
+  background: none;
+  -webkit-text-fill-color: var(--color-text-primary);
+}
+
+.stats-header h3::after { display: none; }
+
+.stats-header p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.close-btn {
+  background: rgba(91, 112, 101, 0.08);
+  color: var(--color-text-accent);
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: var(--transition-smooth);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.close-btn:hover {
+  background: var(--accent);
+  color: white;
+  transform: scale(1.1) rotate(90deg);
+}
+
+/* ─── Metrics Grid ─── */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.metric-card {
+  background: var(--color-bg-muted);
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  text-align: center;
+  border: 1px solid var(--color-border-subtle);
+  transition: all var(--duration-normal) var(--ease-apple);
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-forest);
+}
+
+.metric-icon { font-size: 26px; margin-bottom: 8px; }
+
+.metric-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+  font-family: 'Sora', sans-serif;
+}
+
+.metric-label {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+/* ─── Sections ─── */
+.stats-section {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: var(--color-bg-muted);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-subtle);
+}
+
+.stats-section h4 {
+  margin: 0 0 14px 0;
+  color: var(--color-text-primary);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: 'Sora', sans-serif;
+}
+
+/* ─── Top 10 Opportunities ─── */
+.opportunities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.opportunity-item {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-text-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all var(--duration-normal) ease;
+}
+
+.opportunity-item:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-forest);
+}
+
+.opp-rank {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-right: 12px;
+  min-width: 24px;
+  text-align: center;
+  font-family: 'Sora', sans-serif;
+}
+
+.opp-details { flex: 1; font-size: 12px; }
+.opp-location { color: var(--color-text-muted); margin-bottom: 3px; }
+.opp-score { color: var(--color-text-primary); font-weight: 600; }
+
+/* ─── Price Distribution Chart ─── */
+.chart-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chart-bar-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chart-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.chart-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chart-bar {
+  height: 22px;
+  border-radius: var(--radius-sm);
+  transition: width 0.3s var(--ease-apple);
+  min-width: 2%;
+  background: var(--gradient-primary) !important;
+}
+
+.chart-value {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ─── Potential Distribution ─── */
+.potential-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.potential-card {
+  background: white;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  text-align: center;
+  border: 1.5px solid;
+  transition: all var(--duration-normal) var(--ease-apple);
+}
+
+.potential-card:hover { transform: scale(1.03); }
+
+.potential-color {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  margin: 0 auto 8px;
+  border: 2px solid rgba(0, 0, 0, 0.08);
+}
+
+.potential-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+}
+
+.potential-count {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: 2px;
+  font-family: 'Sora', sans-serif;
+}
+
+.potential-percentage {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* ─── Cities Comparison ─── */
+.cities-comparison {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.city-card {
+  background: white;
+  padding: 14px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-subtle);
+  transition: all var(--duration-normal) var(--ease-apple);
+}
+
+.city-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-forest);
+}
+
+.city-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--color-text-primary);
+}
+
+.city-header h5 {
+  margin: 0;
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.city-badge {
+  background: var(--color-text-primary);
+  color: white;
+  padding: 3px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.city-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.city-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.stat-label { color: var(--color-text-muted); }
+.stat-value { font-weight: 600; color: var(--color-text-primary); font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+
+/* Potential bar */
+.city-potential-bar {
+  height: 16px;
+  display: flex;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
+}
+
+.potential-segment { transition: width 0.3s var(--ease-apple); }
+.potential-segment.alto  { background: linear-gradient(90deg, #DC2626, #B91C1C); }
+.potential-segment.medio { background: linear-gradient(90deg, #D97706, #B45309); }
+.potential-segment.bajo  { background: linear-gradient(90deg, #5B7065, #304040); }
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .stats-dashboard { width: 100%; }
+  .metrics-grid { grid-template-columns: 1fr; }
+  .potential-grid { grid-template-columns: 1fr; }
+}
+
+/* ─── Scrollbar ─── */
+.stats-dashboard::-webkit-scrollbar { width: 4px; }
+.stats-dashboard::-webkit-scrollbar-track { background: transparent; }
+.stats-dashboard::-webkit-scrollbar-thumb { background: rgba(91, 112, 101, 0.3); border-radius: 9999px; }
+.stats-dashboard::-webkit-scrollbar-thumb:hover { background: rgba(4, 32, 44, 0.4); }

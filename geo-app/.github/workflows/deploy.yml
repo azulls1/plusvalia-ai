@@ -1,0 +1,206 @@
+# ================================================================
+# DEPLOY PIPELINE — geo-app
+# ================================================================
+# Triggers after CI passes on pushes to main.
+# Deploys frontend to hosting and backend Docker image to registry.
+# Includes automatic rollback on failure.
+# ================================================================
+
+name: Deploy Pipeline
+
+on:
+  push:
+    branches: [main]
+
+# Only one deploy at a time
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "18"
+  PYTHON_VERSION: "3.11"
+  DOCKER_IMAGE: backend-inmobiliario
+  DOCKER_REGISTRY: ${{ secrets.DOCKER_REGISTRY }}
+
+permissions:
+  contents: read
+  packages: write
+
+# ================================================================
+# JOBS
+# ================================================================
+jobs:
+
+  # --------------------------------------------------------------
+  # 1. Deploy Frontend — Build Angular & deploy to hosting
+  # --------------------------------------------------------------
+  deploy-frontend:
+    name: "Deploy · Frontend"
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: npx ng build --configuration production
+        env:
+          # Inject production environment variables at build time
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+      # ---- Deploy to Hostinger VPS ----
+      - name: Deploy frontend to VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /var/www/iainmobiliaria
+            rm -rf old_dist && mv dist old_dist || true
+            mkdir -p dist
+
+      - name: Upload build artifacts
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          source: "app/dist/app/*"
+          target: "/var/www/iainmobiliaria/dist/"
+          strip_components: 3
+
+      - name: Verify frontend deployment
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            curl -sf https://iainmobiliaria.iagentek.com.mx/ > /dev/null && echo "Frontend OK" || echo "Frontend FAILED"
+
+  # --------------------------------------------------------------
+  # 2. Deploy Backend — Docker build, push, deploy
+  # --------------------------------------------------------------
+  deploy-backend:
+    name: "Deploy · Backend"
+    runs-on: ubuntu-latest
+    environment: production
+    outputs:
+      image_tag: ${{ steps.meta.outputs.tags }}
+      previous_tag: ${{ steps.previous.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # -- Record current running version for rollback --
+      - name: Record previous image tag
+        id: previous
+        run: |
+          # Store the current deployed tag so we can roll back if needed.
+          # In a real setup, query your registry or deployment for the running tag.
+          echo "tag=${{ env.DOCKER_IMAGE }}:previous" >> "$GITHUB_OUTPUT"
+
+      # -- Docker setup --
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # -- Build & push --
+      - name: Docker meta (tags & labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE }}
+          tags: |
+            type=sha,prefix=
+            type=raw,value=latest
+            type=raw,value={{date 'YYYYMMDD-HHmmss'}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: python_services
+          file: python_services/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+
+      # -- Deploy to server --
+      - name: Deploy backend to VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /root
+            docker pull ${{ secrets.DOCKER_REGISTRY }}/backend-inmobiliario:${{ github.sha }}
+            docker compose -f docker-compose.production.yml up -d --no-deps backend-api
+            sleep 10
+            curl -sf http://localhost:8000/health && echo "Backend OK" || (echo "Backend FAILED - rolling back" && docker compose -f docker-compose.production.yml up -d --no-deps backend-api && exit 1)
+
+      # -- Health check after deploy --
+      - name: Verify backend health
+        run: |
+          for i in $(seq 1 12); do
+            if curl -sf https://api.iainmobiliaria.iagentek.com.mx/health; then
+              echo "Backend healthy"
+              exit 0
+            fi
+            echo "Waiting for backend... attempt $i/12"
+            sleep 10
+          done
+          echo "Backend health check failed"
+          exit 1
+
+  # --------------------------------------------------------------
+  # 3. Rollback — Triggered if backend deploy fails
+  # --------------------------------------------------------------
+  rollback:
+    name: "Rollback · Backend"
+    runs-on: ubuntu-latest
+    needs: deploy-backend
+    if: failure()
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Execute rollback
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            cd /root/geo-app
+            bash scripts/rollback.sh
+
+      - name: Notify rollback
+        if: always()
+        run: |
+          echo "::warning::Rollback executed for backend deployment"

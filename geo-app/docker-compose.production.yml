@@ -1,0 +1,294 @@
+# ================================================================
+# DOCKER COMPOSE — Production (geo-app)
+# ================================================================
+# Full production stack: Backend API, Traefik proxy,
+# Prometheus monitoring, and Grafana dashboards.
+#
+# Usage:
+#   docker compose -f docker-compose.production.yml up -d
+#
+# Prerequisites:
+#   - Create Docker secrets before deploying (see secrets section)
+#   - Create the external traefik_public network:
+#       docker network create traefik_public
+# ================================================================
+
+version: "3.8"
+
+# ================================================================
+# SERVICES
+# ================================================================
+services:
+
+  # --------------------------------------------------------------
+  # Backend API — FastAPI + ML Model
+  # --------------------------------------------------------------
+  backend-api:
+    image: ${DOCKER_REGISTRY:-localhost}/backend-inmobiliario:${IMAGE_TAG:-latest}
+    build:
+      context: ./python_services
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      - traefik_public
+      - backend_internal
+    volumes:
+      - model_cache:/app/ml_model/models
+      - app_logs:/app/logs
+      - app_data:/app/data
+    secrets:
+      - supabase_url
+      - supabase_key
+      - supabase_service_role_key
+      - postgres_host
+      - postgres_password
+    environment:
+      # Non-sensitive configuration only — secrets are mounted as files
+      API_HOST: "0.0.0.0"
+      API_PORT: "8000"
+      API_WORKERS: "4"
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: "postgres"
+      POSTGRES_USER: "postgres"
+      ALLOWED_ORIGINS: "https://iagentek.com.mx"
+      MODEL_PATH: "/app/ml_model/models"
+      MODEL_RETRAIN_DAYS: "30"
+      LOG_LEVEL: "INFO"
+      PYTHONUNBUFFERED: "1"
+      # Tell the app to read secrets from /run/secrets/
+      SECRETS_DIR: "/run/secrets"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 1
+        delay: 15s
+        failure_action: rollback
+        order: start-first
+      rollback_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 5
+        window: 120s
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    labels:
+      # Traefik routing
+      - traefik.enable=true
+      - traefik.http.routers.backend-api.rule=Host(`apiinmobiliario.iagentek.com.mx`)
+      - traefik.http.routers.backend-api.entrypoints=websecure
+      - traefik.http.routers.backend-api.tls.certresolver=letsencryptresolver
+      - traefik.http.services.backend-api.loadbalancer.server.port=8000
+      # CORS middleware
+      - traefik.http.middlewares.backend-cors.headers.accesscontrolalloworiginlist=https://iagentek.com.mx
+      - traefik.http.middlewares.backend-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS
+      - traefik.http.middlewares.backend-cors.headers.accesscontrolmaxage=100
+      - traefik.http.middlewares.backend-cors.headers.addvaryheader=true
+      # Rate limiting middleware
+      - traefik.http.middlewares.backend-ratelimit.ratelimit.average=100
+      - traefik.http.middlewares.backend-ratelimit.ratelimit.burst=50
+      # Apply middlewares
+      - traefik.http.routers.backend-api.middlewares=backend-cors@docker,backend-ratelimit@docker
+      # Prometheus metrics label
+      - prometheus.scrape=true
+      - prometheus.port=8000
+      - prometheus.path=/metrics
+
+  # --------------------------------------------------------------
+  # Traefik — Reverse Proxy & TLS termination
+  # --------------------------------------------------------------
+  traefik:
+    image: traefik:v3.0
+    restart: unless-stopped
+    command:
+      - "--api.dashboard=true"
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=traefik_public"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      # Redirect HTTP -> HTTPS
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      # Let's Encrypt TLS
+      - "--certificatesresolvers.letsencryptresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencryptresolver.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencryptresolver.acme.email=${ACME_EMAIL:-admin@iagentek.com.mx}"
+      - "--certificatesresolvers.letsencryptresolver.acme.storage=/letsencrypt/acme.json"
+      # Prometheus metrics
+      - "--metrics.prometheus=true"
+      - "--metrics.prometheus.entryPoint=metrics"
+      - "--entrypoints.metrics.address=:8082"
+      # Access log
+      - "--accesslog=true"
+      - "--accesslog.filepath=/var/log/traefik/access.log"
+      - "--accesslog.bufferingsize=100"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik_certs:/letsencrypt
+      - traefik_logs:/var/log/traefik
+    networks:
+      - traefik_public
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 256M
+        reservations:
+          cpus: "0.1"
+          memory: 64M
+
+  # --------------------------------------------------------------
+  # Prometheus — Metrics collection
+  # --------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alerting-rules.yml:/etc/prometheus/alerting-rules.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+      - "--storage.tsdb.retention.size=10GB"
+      - "--web.enable-lifecycle"
+    networks:
+      - backend_internal
+      - traefik_public
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          cpus: "0.25"
+          memory: 256M
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.prometheus.rule=Host(`prometheus.iagentek.com.mx`)
+      - traefik.http.routers.prometheus.entrypoints=websecure
+      - traefik.http.routers.prometheus.tls.certresolver=letsencryptresolver
+      - traefik.http.services.prometheus.loadbalancer.server.port=9090
+
+  # --------------------------------------------------------------
+  # Grafana — Dashboards & alerting UI
+  # --------------------------------------------------------------
+  grafana:
+    image: grafana/grafana:10.4.0
+    restart: unless-stopped
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+    environment:
+      GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER:-admin}"
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:-changeme}"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: "https://grafana.iagentek.com.mx"
+    networks:
+      - backend_internal
+      - traefik_public
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 128M
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.grafana.rule=Host(`grafana.iagentek.com.mx`)
+      - traefik.http.routers.grafana.entrypoints=websecure
+      - traefik.http.routers.grafana.tls.certresolver=letsencryptresolver
+      - traefik.http.services.grafana.loadbalancer.server.port=3000
+
+# ================================================================
+# VOLUMES
+# ================================================================
+volumes:
+  model_cache:
+    driver: local
+  app_logs:
+    driver: local
+  app_data:
+    driver: local
+  traefik_certs:
+    driver: local
+  traefik_logs:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+# ================================================================
+# NETWORKS
+# ================================================================
+networks:
+  # Public network — Traefik-facing services
+  traefik_public:
+    external: true
+  # Internal network — backend <-> monitoring (not exposed)
+  backend_internal:
+    driver: overlay
+    internal: true
+
+# ================================================================
+# SECRETS — Create before deploying:
+#   echo "https://xxx.supabase.co" | docker secret create supabase_url -
+#   echo "your-key"                | docker secret create supabase_key -
+#   echo "your-service-role-key"   | docker secret create supabase_service_role_key -
+#   echo "db.host.com"             | docker secret create postgres_host -
+#   echo "strong-password"         | docker secret create postgres_password -
+# ================================================================
+secrets:
+  supabase_url:
+    external: true
+  supabase_key:
+    external: true
+  supabase_service_role_key:
+    external: true
+  postgres_host:
+    external: true
+  postgres_password:
+    external: true

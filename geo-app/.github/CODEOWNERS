@@ -1,0 +1,43 @@
+# ================================================================
+# CODEOWNERS — geo-app
+# ================================================================
+# GitHub will automatically request reviews from these owners
+# when a pull request modifies matching files.
+#
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+# ================================================================
+
+# Default owner — catches everything not matched below
+*                                   @shernandez
+
+# ================================================================
+# Frontend (Angular)
+# ================================================================
+/app/                               @shernandez
+/app/src/                           @shernandez
+
+# ================================================================
+# Backend (FastAPI + ML)
+# ================================================================
+/python_services/                   @shernandez
+/python_services/ml_model/          @shernandez
+/python_services/api/               @shernandez
+
+# ================================================================
+# Infrastructure & DevOps
+# ================================================================
+/.github/                           @shernandez
+/docker-compose*.yml                @shernandez
+/python_services/Dockerfile         @shernandez
+/monitoring/                        @shernandez
+/scripts/                           @shernandez
+
+# ================================================================
+# Database
+# ================================================================
+/scripts_sql/                       @shernandez
+
+# ================================================================
+# Workflows / Automations
+# ================================================================
+/n8n_workflows/                     @shernandez

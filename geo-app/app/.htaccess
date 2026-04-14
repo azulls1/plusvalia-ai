@@ -1,0 +1,115 @@
+# ================================================================
+# .htaccess para Angular en Hostinger
+# ================================================================
+# Este archivo permite que Angular maneje todas las rutas
+# ================================================================
+
+<IfModule mod_rewrite.c>
+    # Activar rewrite
+    RewriteEngine On
+    
+    # Si el request es para un archivo o directorio que existe, servirlo directamente
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Todo lo demás, redirigir a index.html (para que Angular maneje las rutas)
+    RewriteRule ^ index.html [L]
+</IfModule>
+
+# ================================================================
+# SEGURIDAD
+# ================================================================
+
+# Prevenir listado de directorios
+Options -Indexes
+
+# Proteger archivos sensibles
+<FilesMatch "\.(env|json|yml|yaml|log|sql|md|key|pem|cert|p12)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# ================================================================
+# SECURITY HEADERS (OWASP Best Practices)
+# ================================================================
+
+<IfModule mod_headers.c>
+    # Prevent MIME type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+
+    # Prevent clickjacking — deny all framing
+    Header always set X-Frame-Options "DENY"
+
+    # Enable XSS filter in legacy browsers
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Force HTTPS for 1 year with subdomains and preload
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+
+    # Control referrer information
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Restrict browser features/APIs
+    Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(self), payment=(), usb=()"
+
+    # Content Security Policy
+    # IMPORTANT: Adjust allowed domains to match your deployment
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://*.tile.openstreetmap.org https://unpkg.com; connect-src 'self' https://iagenteksupabase.iagentek.com.mx https://iagentekn8nwebhook.iagentek.com.mx https://apiinmobiliario.iagentek.com.mx https://nominatim.openstreetmap.org https://overpass-api.de; frame-ancestors 'none'; base-uri 'self'; form-action 'self';"
+
+    # Remove server signature
+    Header always unset X-Powered-By
+    Header always unset Server
+</IfModule>
+
+# ================================================================
+# COMPRESIÓN (mejora velocidad)
+# ================================================================
+
+<IfModule mod_deflate.c>
+    # Comprimir HTML, CSS, JavaScript, Text, XML y fuentes
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    AddOutputFilterByType DEFLATE application/json
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE image/svg+xml
+    AddOutputFilterByType DEFLATE application/vnd.ms-fontobject
+    AddOutputFilterByType DEFLATE application/x-font-ttf
+    AddOutputFilterByType DEFLATE font/opentype
+</IfModule>
+
+# ================================================================
+# CACHE (mejora velocidad)
+# ================================================================
+
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # Imágenes
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType image/x-icon "access plus 1 year"
+    
+    # CSS y JavaScript
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    
+    # HTML (sin cache para que actualice rápido)
+    ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+# ================================================================
+# HTTPS (forzar HTTPS)
+# ================================================================
+
+<IfModule mod_rewrite.c>
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+</IfModule>

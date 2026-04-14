@@ -1,0 +1,186 @@
+# ================================================================
+# DOCKER COMPOSE PRODUCTION - Backend + Redis + Celery
+# ================================================================
+# Deploy with: docker stack deploy -c docker-compose.production.yml inmobiliario
+# ================================================================
+
+version: '3.8'
+
+services:
+  backend-api:
+    image: ${DOCKER_REGISTRY:-localhost}/backend-inmobiliario:${IMAGE_TAG:-latest}
+    environment:
+      API_HOST: "0.0.0.0"
+      API_PORT: "8000"
+      API_WORKERS: "4"
+      ENVIRONMENT: "production"
+      REDIS_URL: "redis://redis:6379/0"
+      ALLOWED_ORIGINS: "https://iagentek.com.mx"
+      MODEL_PATH: "/app/ml_model/models"
+      MODEL_RETRAIN_DAYS: "30"
+      LOG_LEVEL: "INFO"
+      PYTHONUNBUFFERED: "1"
+    secrets:
+      - supabase_url
+      - supabase_key
+      - supabase_service_role_key
+    volumes:
+      - model_cache:/app/ml_model/models
+      - logs:/app/logs
+      - data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend-inmobiliario.rule=Host(`apiinmobiliario.iagentek.com.mx`)
+      - traefik.http.routers.backend-inmobiliario.entrypoints=websecure
+      - traefik.http.routers.backend-inmobiliario.tls.certresolver=letsencryptresolver
+      - traefik.http.services.backend-inmobiliario.loadbalancer.server.port=8000
+      - traefik.http.middlewares.backend-inmobiliario-cors.headers.accesscontrolalloworiginlist=https://iagentek.com.mx
+      - traefik.http.middlewares.backend-inmobiliario-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS
+      - traefik.http.middlewares.backend-inmobiliario-cors.headers.accesscontrolmaxage=100
+      - traefik.http.middlewares.backend-inmobiliario-cors.headers.addvaryheader=true
+      - traefik.http.routers.backend-inmobiliario.middlewares=backend-inmobiliario-cors@docker
+    networks:
+      - traefik_default
+      - backend_internal
+    depends_on:
+      - redis
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+  # ========================================
+  # REDIS
+  # ========================================
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru --requirepass ${REDIS_PASSWORD:-}
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend_internal
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 512M
+        reservations:
+          cpus: "0.1"
+          memory: 128M
+      restart_policy:
+        condition: on-failure
+        max_attempts: 5
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+  # ========================================
+  # CELERY WORKER
+  # ========================================
+  celery-worker:
+    image: ${DOCKER_REGISTRY:-localhost}/backend-inmobiliario:${IMAGE_TAG:-latest}
+    command: celery -A celery_app worker --loglevel=info --concurrency=2 -Q default,ml,enrichment
+    environment:
+      REDIS_URL: "redis://redis:6379/0"
+      CELERY_BROKER_URL: "redis://redis:6379/0"
+      CELERY_RESULT_BACKEND: "redis://redis:6379/1"
+    secrets:
+      - supabase_url
+      - supabase_key
+      - supabase_service_role_key
+    volumes:
+      - model_cache:/app/ml_model/models
+    networks:
+      - backend_internal
+    depends_on:
+      - redis
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 2G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+
+  # ========================================
+  # CELERY BEAT (Scheduler)
+  # ========================================
+  celery-beat:
+    image: ${DOCKER_REGISTRY:-localhost}/backend-inmobiliario:${IMAGE_TAG:-latest}
+    command: celery -A celery_app beat --loglevel=info
+    environment:
+      REDIS_URL: "redis://redis:6379/0"
+      CELERY_BROKER_URL: "redis://redis:6379/0"
+    secrets:
+      - supabase_url
+      - supabase_key
+    networks:
+      - backend_internal
+    depends_on:
+      - redis
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 256M
+
+# ========================================
+# VOLUMES
+# ========================================
+volumes:
+  model_cache:
+    driver: local
+  logs:
+    driver: local
+  data:
+    driver: local
+  redis_data:
+    driver: local
+
+# ========================================
+# NETWORKS
+# ========================================
+networks:
+  traefik_default:
+    external: true
+  backend_internal:
+    driver: overlay
+
+# ========================================
+# SECRETS
+# ========================================
+secrets:
+  supabase_url:
+    external: true
+  supabase_key:
+    external: true
+  supabase_service_role_key:
+    external: true

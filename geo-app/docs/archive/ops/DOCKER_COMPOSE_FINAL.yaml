@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  backend-api:
+    image: backend-inmobiliario:latest
+    
+    environment:
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - API_WORKERS=4
+      - SUPABASE_URL=https://iagenteksupabase.iagentek.com.mx
+      - SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogImFub24iLAogICJpc3MiOiAic3VwYWJhc2UiLAogICJpYXQiOiAxNzE1MDUwODAwLAogICJleHAiOiAxODcyODE3MjAwCn0.23LYnOepZ9yTJObLFoTnszO5WdHpbekvgwMt8bn2o_k
+      - SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ewogICJyb2xlIjogInNlcnZpY2Vfcm9sZSIsCiAgImlzcyI6ICJzdXBhYmFzZSIsCiAgImlhdCI6IDE3MTUwNTA4MDAsCiAgImV4cCI6IDE4NzI4MTcyMDAKfQ.82nFc9RPC-0tzN0svrqQrnHUHHe51bJkpCUiC_uTypo
+      - POSTGRES_HOST=iagenteksupabase.iagentek.com.mx
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres.iagenteksupabase
+      - POSTGRES_PASSWORD=Iagentek_123root@vmi2851872
+      - ALLOWED_ORIGINS=https://iagentek.com.mx,http://localhost:4200
+      - MODEL_PATH=/app/ml_model/models
+      - MODEL_RETRAIN_DAYS=30
+      - LOG_LEVEL=INFO
+      - PYTHONUNBUFFERED=1
+    
+    volumes:
+      - model_cache:/app/ml_model/models
+      - logs:/app/logs
+      - data:/app/data
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.backend-inmobiliario.rule=Host(`apiinmobiliario.iagentek.com.mx`)
+      - traefik.http.routers.backend-inmobiliario.entrypoints=websecure
+      - traefik.http.routers.backend-inmobiliario.tls.certresolver=letsencryptresolver
+      - traefik.http.services.backend-inmobiliario.loadbalancer.server.port=8000
+      - traefik.http.middlewares.backend-inmobiliario-cors.headers.accesscontrolalloworiginlist=https://iagentek.com.mx
+      - traefik.http.middlewares.backend-inmobiliario-cors.headers.accesscontrolallowmethods=GET,POST,PUT,DELETE,OPTIONS
+      - traefik.http.middlewares.backend-inmobiliario-cors.headers.accesscontrolmaxage=100
+      - traefik.http.middlewares.backend-inmobiliario-cors.headers.addvaryheader=true
+      - traefik.http.routers.backend-inmobiliario.middlewares=backend-inmobiliario-cors@docker
+    
+    networks:
+      - traefik_default
+    
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+        delay: 10s
+        failure_action: rollback
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+        window: 120s
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+volumes:
+  model_cache:
+    driver: local
+  logs:
+    driver: local
+  data:
+    driver: local
+
+networks:
+  traefik_default:
+    external: true
+    name: traefik_default
+

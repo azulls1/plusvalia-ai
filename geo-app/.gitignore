@@ -1,0 +1,61 @@
+# ================================================================
+# .gitignore - Proyecto Completo
+# ================================================================
+
+# ==================== ARCHIVOS SENSIBLES (CRÍTICO) ====================
+# Environment files — NEVER commit real credentials
+*.env
+.env
+.env.local
+.env.*.local
+.env.production
+.env.staging
+
+# Certificates and private keys
+*.pem
+*.key
+*.cert
+*.p12
+*.pfx
+*.crt
+*.csr
+
+# Credential files
+credentials*.json
+secrets/
+service-account*.json
+*.keystore
+
+# Security audit reports (may contain vulnerability details)
+security/audit-report-*.txt
+
+# ==================== Python ====================
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+*.log
+
+# ==================== Node/Angular ====================
+node_modules/
+dist/
+.angular/
+
+# ==================== IDEs ====================
+.idea/
+.vscode/
+.DS_Store
+
+# ==================== Datos ====================
+*.csv
+*.xlsx
+!data/samples/
+
+# ==================== Modelos ML ====================
+# Model files may contain embedded training data
+*.pkl
+*.joblib
+*.h5
+*.onnx
+*.pt
+
