@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Angular-16-DD0031?logo=angular" alt="Angular 16" />
+  <img src="https://img.shields.io/badge/Angular-20-DD0031?logo=angular" alt="Angular 20" />
   <img src="https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi" alt="FastAPI" />
   <img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python" alt="Python" />
   <img src="https://img.shields.io/badge/LightGBM-4.5-green" alt="LightGBM" />
@@ -66,7 +66,7 @@ Plusvalia AI es una plataforma full-stack que predice la plusvalia (apreciacion)
 
 ```
                     ┌──────────────────────────┐
-                    │   Angular 16 SPA (Nginx)  │
+                    │   Angular 20 SPA (Nginx)  │
                     │   Leaflet + Tailwind CSS  │
                     │   Forest Design System    │
                     └────────────┬─────────────┘
@@ -98,7 +98,7 @@ Plusvalia AI es una plataforma full-stack que predice la plusvalia (apreciacion)
 
 | Capa | Tecnologias |
 |------|-------------|
-| **Frontend** | Angular 16, TypeScript (strict), Leaflet, Tailwind CSS, Cypress |
+| **Frontend** | Angular 20, TypeScript (strict), Leaflet, Tailwind CSS, Cypress |
 | **Backend** | FastAPI, Python 3.11, Uvicorn, Celery 5 + Beat |
 | **ML** | LightGBM 4.5, XGBoost 2.1, Optuna 4.1, SHAP 0.46, scikit-learn |
 | **Geospatial** | H3 hexagonal indexing, GeoPandas, Shapely, Rasterio |
@@ -233,7 +233,7 @@ Abrir **http://localhost:4200**
 ```
 plusvalia-ai/
 ├── geo-app/
-│   ├── app/                        # Angular 16 SPA
+│   ├── app/                        # Angular 20 SPA
 │   │   ├── Dockerfile              # Multi-stage (Node 18 + Nginx)
 │   │   ├── nginx.conf              # SPA routing, gzip, security headers
 │   │   └── src/app/
@@ -270,5 +270,5 @@ Todos los derechos reservados.
 ---
 
 <p align="center">
-  <sub>Desarrollado por Samael Hernandez &mdash; Angular 16, FastAPI, LightGBM, Supabase, Docker Swarm.</sub>
+  <sub>Desarrollado por Samael Hernandez &mdash; Angular 20, FastAPI, LightGBM, Supabase, Docker Swarm.</sub>
 </p>

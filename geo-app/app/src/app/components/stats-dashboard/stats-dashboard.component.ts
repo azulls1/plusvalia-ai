@@ -4,11 +4,10 @@ import { CommonModule } from '@angular/common';
 import { HeatmapPoint, CityStats } from '../../models/interfaces';
 
 @Component({
-  selector: 'app-stats-dashboard',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './stats-dashboard.component.html',
-  styleUrls: ['./stats-dashboard.component.css']
+    selector: 'app-stats-dashboard',
+    imports: [CommonModule],
+    templateUrl: './stats-dashboard.component.html',
+    styleUrls: ['./stats-dashboard.component.css']
 })
 export class StatsDashboardComponent implements OnInit, OnChanges {
   @Input() citiesStats: CityStats[] = [];

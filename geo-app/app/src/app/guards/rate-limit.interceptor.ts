@@ -18,13 +18,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import {
-  HttpInterceptor,
-  HttpRequest,
-  HttpHandler,
-  HttpEvent,
-  HttpErrorResponse
-} from '@angular/common/http';
+import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, Subject, of } from 'rxjs';
 import { catchError, timeout, takeUntil, finalize, share } from 'rxjs/operators';
 

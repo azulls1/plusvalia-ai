@@ -12,11 +12,10 @@ interface SearchResult {
 }
 
 @Component({
-  selector: 'app-address-search',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './address-search.component.html',
-  styleUrls: ['./address-search.component.css']
+    selector: 'app-address-search',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './address-search.component.html',
+    styleUrls: ['./address-search.component.css']
 })
 export class AddressSearchComponent {
   @Output() locationSelected = new EventEmitter<{lat: number, lon: number, name: string}>();

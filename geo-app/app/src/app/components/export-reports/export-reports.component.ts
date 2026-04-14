@@ -4,11 +4,10 @@ import { CommonModule } from '@angular/common';
 import { HeatmapPoint, CityStats } from '../../models/interfaces';
 
 @Component({
-  selector: 'app-export-reports',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './export-reports.component.html',
-  styleUrls: ['./export-reports.component.css']
+    selector: 'app-export-reports',
+    imports: [CommonModule],
+    templateUrl: './export-reports.component.html',
+    styleUrls: ['./export-reports.component.css']
 })
 export class ExportReportsComponent {
   @Input() predictions: HeatmapPoint[] = [];

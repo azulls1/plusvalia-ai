@@ -34,7 +34,7 @@ RUN rm /etc/nginx/conf.d/default.conf
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy built Angular app
-COPY --from=builder /app/dist/app /usr/share/nginx/html
+COPY --from=builder /app/dist/app/browser /usr/share/nginx/html
 
 # Security: run as non-root
 RUN chown -R nginx:nginx /usr/share/nginx/html \

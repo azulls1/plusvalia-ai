@@ -32,12 +32,11 @@ const MEXICAN_STATES: string[] = [
   'Zacatecas'
 ];
 
-@Component({ // decorador del componente
-  selector: 'app-mapa', // selector HTML
-  standalone: true, // componente standalone
-  imports: [CommonModule, FormsModule, RouterModule, FiltersPanelComponent, AddressSearchComponent, AdvancedFiltersComponent, FileUploadComponent], // importa componentes y módulos
-  templateUrl: './mapa.component.html', // ruta del template HTML
-  styleUrls: ['./mapa.component.css'] // ruta de estilos CSS
+@Component({
+    selector: 'app-mapa', // componente standalone
+    imports: [CommonModule, FormsModule, RouterModule, FiltersPanelComponent, AddressSearchComponent, AdvancedFiltersComponent, FileUploadComponent], // importa componentes y módulos
+    templateUrl: './mapa.component.html', // ruta del template HTML
+    styleUrls: ['./mapa.component.css'] // ruta de estilos CSS
 })
 export class MapaComponent implements OnInit, OnDestroy { // clase del componente implementa OnInit, OnDestroy
   private map!: L.Map; // instancia del mapa Leaflet

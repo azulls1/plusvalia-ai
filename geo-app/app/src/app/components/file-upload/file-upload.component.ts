@@ -4,12 +4,11 @@ import { CommonModule } from '@angular/common'; // módulo común
 import { ApiService } from '../../services/api.service'; // servicio API
 import { FileValidator } from '../../validators/file-validator'; // validador de archivos
 
-@Component({ // decorador del componente
-  selector: 'app-file-upload', // selector HTML
-  standalone: true, // componente standalone
-  imports: [CommonModule], // importa módulo común
-  templateUrl: './file-upload.component.html', // ruta del template
-  styleUrls: ['./file-upload.component.css'] // ruta de estilos
+@Component({
+    selector: 'app-file-upload', // componente standalone
+    imports: [CommonModule], // importa módulo común
+    templateUrl: './file-upload.component.html', // ruta del template
+    styleUrls: ['./file-upload.component.css'] // ruta de estilos
 })
 export class FileUploadComponent { // clase del componente
   @Output() fileUploaded = new EventEmitter<Record<string, unknown>>(); // evento emitido cuando archivo es subido

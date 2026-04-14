@@ -51,11 +51,10 @@ export interface AdvancedFilters {
 }
 
 @Component({
-  selector: 'app-advanced-filters',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './advanced-filters.component.html',
-  styleUrls: ['./advanced-filters.component.css']
+    selector: 'app-advanced-filters',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './advanced-filters.component.html',
+    styleUrls: ['./advanced-filters.component.css']
 })
 export class AdvancedFiltersComponent {
   @Output() filtersChanged = new EventEmitter<AdvancedFilters>();

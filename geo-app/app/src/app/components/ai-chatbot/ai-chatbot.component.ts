@@ -11,11 +11,10 @@ interface ChatMessage {
 }
 
 @Component({
-  selector: 'app-ai-chatbot',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './ai-chatbot.component.html',
-  styleUrls: ['./ai-chatbot.component.css']
+    selector: 'app-ai-chatbot',
+    imports: [CommonModule, FormsModule],
+    templateUrl: './ai-chatbot.component.html',
+    styleUrls: ['./ai-chatbot.component.css']
 })
 export class AiChatbotComponent {
   @ViewChild('chatMessagesEl') private chatMessagesRef!: ElementRef<HTMLDivElement>;

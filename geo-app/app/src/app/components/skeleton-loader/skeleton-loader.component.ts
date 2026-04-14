@@ -2,10 +2,9 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-skeleton-loader',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
+    selector: 'app-skeleton-loader',
+    imports: [CommonModule],
+    template: `
     <div class="skeleton-container" [ngStyle]="containerStyle">
       <!-- Card skeleton -->
       <div *ngIf="type === 'card'" class="skeleton-card animate-pulse">
@@ -53,7 +52,7 @@ import { CommonModule } from '@angular/common';
       </div>
     </div>
   `,
-  styles: [`
+    styles: [`
     .skeleton-container {
       width: 100%;
     }

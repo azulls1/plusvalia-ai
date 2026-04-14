@@ -3,12 +3,11 @@ import { Component, EventEmitter, Output, Input } from '@angular/core'; // decor
 import { CommonModule } from '@angular/common'; // módulo común
 import { FormsModule } from '@angular/forms'; // módulo para formularios (ngModel)
 
-@Component({ // decorador del componente
-  selector: 'app-filters-panel', // selector HTML
-  standalone: true, // componente standalone
-  imports: [CommonModule, FormsModule], // importa módulos necesarios
-  templateUrl: './filters-panel.component.html', // ruta del template
-  styleUrls: ['./filters-panel.component.css'] // ruta de estilos
+@Component({
+    selector: 'app-filters-panel', // componente standalone
+    imports: [CommonModule, FormsModule], // importa módulos necesarios
+    templateUrl: './filters-panel.component.html', // ruta del template
+    styleUrls: ['./filters-panel.component.css'] // ruta de estilos
 })
 export class FiltersPanelComponent { // clase del componente
   @Output() filtersApplied = new EventEmitter<any>(); // evento cuando se aplican filtros
