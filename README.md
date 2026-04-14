@@ -4,7 +4,8 @@
     <strong>Plataforma de analisis de mercado inmobiliario con Machine Learning para Mexico</strong>
   </p>
   <p align="center">
-    <a href="#demo">Ver Demo</a> &middot;
+    <a href="https://plusvalia.iagentek.com.mx">Demo en Vivo</a> &middot;
+    <a href="https://plusvalia.iagentek.com.mx/como-funciona">Como Funciona</a> &middot;
     <a href="#arquitectura">Arquitectura</a> &middot;
     <a href="#instalacion">Instalacion</a> &middot;
     <a href="geo-app/docs/api/API_REFERENCE.md">API Docs</a>
@@ -20,6 +21,12 @@
   <img src="https://img.shields.io/badge/PostgreSQL-Supabase-3ECF8E?logo=supabase" alt="Supabase" />
   <img src="https://img.shields.io/badge/Redis-7-DC382D?logo=redis" alt="Redis" />
   <img src="https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker" alt="Docker" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Live-plusvalia.iagentek.com.mx-16a34a" alt="Live" />
+  <img src="https://img.shields.io/badge/API-plusvalia--api.iagentek.com.mx-009688" alt="API" />
+  <img src="https://img.shields.io/badge/Mobile-Responsive-blue" alt="Responsive" />
 </p>
 
 ---
@@ -54,6 +61,10 @@ Plusvalia AI es una plataforma full-stack que predice la plusvalia (apreciacion)
 **ML Ops** — Drift detection automatico (KS test + PSI), model registry, bias evaluation, reentrenamiento programado con Celery Beat.
 
 **Predicciones Bulk** — Generacion masiva de predicciones con blending vectorizado para cobertura nacional.
+
+**Pagina "Como Funciona"** — Guia visual que explica el proceso de ML, el score de plusvalia, las fuentes de datos y como usar la plataforma.
+
+**Mobile Responsive** — Layout adaptativo con hamburger menu, sidebar drawer, y mapa fullscreen en dispositivos moviles y tablets (breakpoint 992px).
 
 ---
 
@@ -96,7 +107,7 @@ Plusvalia AI es una plataforma full-stack que predice la plusvalia (apreciacion)
 | **ML** | LightGBM 4.5, XGBoost 2.1, Optuna 4.1, SHAP 0.46, scikit-learn |
 | **Geospatial** | H3 hexagonal indexing, GeoPandas, Shapely, Rasterio |
 | **Base de datos** | PostgreSQL (Supabase), Redis 7 |
-| **Infra** | Docker, Traefik, GitHub Actions CI/CD (7 jobs), Prometheus + Grafana |
+| **Infra** | Docker Swarm, Traefik v3, GitHub Actions CI/CD (7 jobs), Prometheus + Grafana |
 | **Seguridad** | API Key auth, RLS, rate limiting, CORS, audit logs, circuit breaker |
 
 ---
@@ -142,6 +153,38 @@ npm start
 Abrir **http://localhost:4200**
 
 > Para instrucciones detalladas ver [INICIO_RAPIDO.md](geo-app/INICIO_RAPIDO.md)
+
+---
+
+## Deploy en Produccion
+
+La plataforma esta desplegada en un VPS con **Docker Swarm** + **Traefik v3** (SSL automatico via Let's Encrypt).
+
+| Servicio | URL | Imagen |
+|----------|-----|--------|
+| **Frontend** | https://plusvalia.iagentek.com.mx | Angular + Nginx |
+| **Backend API** | https://plusvalia-api.iagentek.com.mx | FastAPI + Uvicorn |
+| **Redis** | Interno | redis:7-alpine |
+| **Celery Worker** | Interno | 3 colas (default, ml, enrichment) |
+| **Celery Beat** | Interno | Tareas programadas |
+| **Flower** | https://plusvalia-flower.iagentek.com.mx | Monitoreo Celery |
+
+### Deploy con Docker Swarm
+
+```bash
+# En el VPS
+cd /root/plusvalia-ai/geo-app
+
+# Build imagenes
+docker build -t plusvalia-ai-frontend:latest ./app
+docker build -t plusvalia-ai-backend:latest ./python_services
+
+# Crear .env con credenciales
+cp python_services/.env.example python_services/.env
+
+# Deploy stack
+docker stack deploy -c plusvalia-ai.yaml plusvalia-ai
+```
 
 ---
 
@@ -193,14 +236,19 @@ Abrir **http://localhost:4200**
 ```
 plusvalia-ai/
 ├── geo-app/
-│   ├── app/                    # Angular 17 SPA
-│   │   ├── src/app/
-│   │   │   ├── components/     # 8+ componentes UI
-│   │   │   ├── services/       # API, Cache, ML, Supabase
-│   │   │   └── validators/     # Input sanitizer, file validator
-│   │   └── cypress/            # 13 E2E tests
+│   ├── app/                    # Angular SPA
+│   │   ├── Dockerfile          # Multi-stage build (Node + Nginx)
+│   │   ├── nginx.conf          # SPA routing, gzip, security headers
+│   │   └── src/app/
+│   │       ├── components/     # 8+ componentes UI (responsive)
+│   │       ├── pages/
+│   │       │   ├── mapa/       # Mapa interactivo principal
+│   │       │   └── como-funciona/  # Pagina explicativa
+│   │       ├── services/       # API, Cache, ML, Supabase, Analytics
+│   │       └── validators/     # Input sanitizer, file validator
 │   │
 │   ├── python_services/        # FastAPI backend
+│   │   ├── Dockerfile          # Multi-stage build (Python 3.11)
 │   │   ├── api/routers/        # predictions, training, stats, tasks
 │   │   ├── ml_model/           # LightGBM, XGBoost, Optuna, SHAP
 │   │   ├── middleware/         # Auth, rate limit, circuit breaker
@@ -208,11 +256,11 @@ plusvalia-ai/
 │   │   ├── scripts/            # Data pipeline, enrichment
 │   │   └── tasks/              # Celery async tasks
 │   │
+│   ├── plusvalia-ai.yaml       # Docker Swarm stack (6 servicios)
 │   ├── monitoring/             # Prometheus + Grafana + alertas
 │   ├── scripts/                # Backup, load test, rollback
 │   ├── scripts_sql/            # 22+ migrations SQL
-│   ├── docs/                   # API, security, SLA, runbooks
-│   └── docker-compose.*.yml    # Local y produccion
+│   └── docs/                   # API, security, SLA, runbooks
 └── README.md
 ```
 
