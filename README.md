@@ -13,19 +13,15 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Angular-17-DD0031?logo=angular" alt="Angular 17" />
+  <img src="https://img.shields.io/badge/Angular-16-DD0031?logo=angular" alt="Angular 16" />
   <img src="https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi" alt="FastAPI" />
   <img src="https://img.shields.io/badge/Python-3.11-3776AB?logo=python" alt="Python" />
   <img src="https://img.shields.io/badge/LightGBM-4.5-green" alt="LightGBM" />
   <img src="https://img.shields.io/badge/XGBoost-2.1-blue" alt="XGBoost" />
   <img src="https://img.shields.io/badge/PostgreSQL-Supabase-3ECF8E?logo=supabase" alt="Supabase" />
   <img src="https://img.shields.io/badge/Redis-7-DC382D?logo=redis" alt="Redis" />
-  <img src="https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker" alt="Docker" />
-</p>
-
-<p align="center">
+  <img src="https://img.shields.io/badge/Docker_Swarm-Ready-2496ED?logo=docker" alt="Docker Swarm" />
   <img src="https://img.shields.io/badge/Live-plusvalia.iagentek.com.mx-16a34a" alt="Live" />
-  <img src="https://img.shields.io/badge/API-plusvalia--api.iagentek.com.mx-009688" alt="API" />
   <img src="https://img.shields.io/badge/Mobile-Responsive-blue" alt="Responsive" />
 </p>
 
@@ -50,11 +46,9 @@ Plusvalia AI es una plataforma full-stack que predice la plusvalia (apreciacion)
 
 ## Funcionalidades
 
-**Mapa Interactivo** — Heatmap de predicciones ML con Leaflet. Click para ver predicciones, filtros por ciudad, score y riesgo. Clusters de marcadores.
+**Mapa Interactivo** — Heatmap de predicciones ML con Leaflet. Coropleta por estado con scores de plusvalia. Click para ver detalle. Filtros por estado, score y precio.
 
 **Predicciones ML (Model v5.0)** — Ensemble de LightGBM + XGBoost con optimizacion Optuna. 30+ features reales. Score de plusvalia 0-100. Explicabilidad SHAP por prediccion.
-
-**Chatbot AI (Favier AI)** — Asistente inmobiliario con lenguaje natural via n8n + OpenAI. Consultas de mercado y recomendaciones personalizadas.
 
 **Datos Gubernamentales** — 8 scrapers automatizados: INEGI, CONAPO, DENUE, SESNSP, SHF, CENAPRED, SEDATU, CONAVI/INFONAVIT.
 
@@ -62,7 +56,7 @@ Plusvalia AI es una plataforma full-stack que predice la plusvalia (apreciacion)
 
 **Predicciones Bulk** — Generacion masiva de predicciones con blending vectorizado para cobertura nacional.
 
-**Pagina "Como Funciona"** — Guia visual que explica el proceso de ML, el score de plusvalia, las fuentes de datos y como usar la plataforma.
+**Pagina "Como Funciona"** — Guia visual que explica el proceso de ML, el score de plusvalia (0-100), las fuentes de datos y como usar la plataforma.
 
 **Mobile Responsive** — Layout adaptativo con hamburger menu, sidebar drawer, y mapa fullscreen en dispositivos moviles y tablets (breakpoint 992px).
 
@@ -71,20 +65,20 @@ Plusvalia AI es una plataforma full-stack que predice la plusvalia (apreciacion)
 <h2 id="arquitectura">Arquitectura</h2>
 
 ```
-                        ┌──────────────────────┐
-                        │    Angular 17 SPA     │
-                        │  Leaflet + Tailwind   │
-                        │  Forest Design System │
-                        └──────────┬───────────┘
-                                   │
-                    ┌──────────────┼──────────────┐
-                    ▼              ▼              ▼
-            ┌──────────────┐ ┌──────────┐ ┌──────────────┐
-            │  FastAPI      │ │  n8n     │ │  Supabase    │
-            │  REST API     │ │  AI Chat │ │  PostgreSQL  │
-            │  ML Inference │ │  Webhooks│ │  31 tablas   │
-            │  SHAP Explain │ │          │ │  RLS + Audit │
-            └──────┬───────┘ └──────────┘ └──────────────┘
+                    ┌──────────────────────────┐
+                    │   Angular 16 SPA (Nginx)  │
+                    │   Leaflet + Tailwind CSS  │
+                    │   Forest Design System    │
+                    └────────────┬─────────────┘
+                                 │
+                    ┌────────────┼────────────┐
+                    ▼                         ▼
+            ┌──────────────┐          ┌──────────────┐
+            │  FastAPI      │          │  Supabase    │
+            │  REST API     │          │  PostgreSQL  │
+            │  ML Inference │          │  31 tablas   │
+            │  SHAP Explain │          │  RLS + Audit │
+            └──────┬───────┘          └──────────────┘
                    │
           ┌────────┼────────┐
           ▼        ▼        ▼
@@ -92,9 +86,11 @@ Plusvalia AI es una plataforma full-stack que predice la plusvalia (apreciacion)
    │  Celery  │ │Redis │ │  ML Pipeline     │
    │  3 colas │ │Cache │ │  LightGBM+XGBoost│
    │  + Beat  │ │Rate  │ │  Optuna+SHAP     │
-   │  + Flower│ │Limit │ │  H3 Spatial      │
+   │          │ │Limit │ │  H3 Spatial      │
    └──────────┘ └──────┘ └──────────────────┘
 ```
+
+**6 servicios en Docker Swarm** con Traefik v3 como reverse proxy y SSL automatico (Let's Encrypt).
 
 ---
 
@@ -102,23 +98,53 @@ Plusvalia AI es una plataforma full-stack que predice la plusvalia (apreciacion)
 
 | Capa | Tecnologias |
 |------|-------------|
-| **Frontend** | Angular 17, TypeScript (strict), Leaflet, Tailwind CSS, Cypress |
-| **Backend** | FastAPI, Python 3.11, Uvicorn, Celery 5 + Beat + Flower |
+| **Frontend** | Angular 16, TypeScript (strict), Leaflet, Tailwind CSS, Cypress |
+| **Backend** | FastAPI, Python 3.11, Uvicorn, Celery 5 + Beat |
 | **ML** | LightGBM 4.5, XGBoost 2.1, Optuna 4.1, SHAP 0.46, scikit-learn |
 | **Geospatial** | H3 hexagonal indexing, GeoPandas, Shapely, Rasterio |
 | **Base de datos** | PostgreSQL (Supabase), Redis 7 |
-| **Infra** | Docker Swarm, Traefik v3, GitHub Actions CI/CD (7 jobs), Prometheus + Grafana |
+| **Infra** | Docker Swarm, Traefik v3, Nginx, Prometheus + Grafana |
 | **Seguridad** | API Key auth, RLS, rate limiting, CORS, audit logs, circuit breaker |
 
 ---
 
-<h2 id="instalacion">Instalacion</h2>
+## Deploy en Produccion
+
+Desplegado en VPS Ubuntu 24.04 (8 cores, 24GB RAM) con **Docker Swarm** + **Traefik v3**.
+
+| Servicio | URL |
+|----------|-----|
+| **Frontend** | https://plusvalia.iagentek.com.mx |
+| **Backend API** | https://plusvalia-api.iagentek.com.mx |
+| **Redis** | Interno (cache + broker Celery) |
+| **Celery Worker** | Interno (3 colas: default, ml, enrichment) |
+| **Celery Beat** | Interno (tareas programadas) |
+
+### Deploy con Docker Swarm
+
+```bash
+cd /root/plusvalia-ai/geo-app
+
+# Build imagenes
+docker build -t plusvalia-ai-frontend:latest ./app
+docker build -t plusvalia-ai-backend:latest ./python_services
+
+# Configurar credenciales
+cp python_services/.env.example python_services/.env
+# Editar .env con credenciales reales
+
+# Deploy
+docker stack deploy -c plusvalia-ai.yaml plusvalia-ai
+```
+
+---
+
+<h2 id="instalacion">Instalacion local</h2>
 
 ### Prerequisitos
 - Python 3.11+
 - Node.js 18+
-- Docker + Docker Compose
-- Redis 7
+- Docker (para Redis)
 
 ### Inicio rapido
 
@@ -152,40 +178,6 @@ npm start
 
 Abrir **http://localhost:4200**
 
-> Para instrucciones detalladas ver [INICIO_RAPIDO.md](geo-app/INICIO_RAPIDO.md)
-
----
-
-## Deploy en Produccion
-
-La plataforma esta desplegada en un VPS con **Docker Swarm** + **Traefik v3** (SSL automatico via Let's Encrypt).
-
-| Servicio | URL | Imagen |
-|----------|-----|--------|
-| **Frontend** | https://plusvalia.iagentek.com.mx | Angular + Nginx |
-| **Backend API** | https://plusvalia-api.iagentek.com.mx | FastAPI + Uvicorn |
-| **Redis** | Interno | redis:7-alpine |
-| **Celery Worker** | Interno | 3 colas (default, ml, enrichment) |
-| **Celery Beat** | Interno | Tareas programadas |
-| **Flower** | https://plusvalia-flower.iagentek.com.mx | Monitoreo Celery |
-
-### Deploy con Docker Swarm
-
-```bash
-# En el VPS
-cd /root/plusvalia-ai/geo-app
-
-# Build imagenes
-docker build -t plusvalia-ai-frontend:latest ./app
-docker build -t plusvalia-ai-backend:latest ./python_services
-
-# Crear .env con credenciales
-cp python_services/.env.example python_services/.env
-
-# Deploy stack
-docker stack deploy -c plusvalia-ai.yaml plusvalia-ai
-```
-
 ---
 
 ## Fuentes de Datos
@@ -205,29 +197,34 @@ docker stack deploy -c plusvalia-ai.yaml plusvalia-ai
 
 ---
 
+## API Endpoints
+
+| Metodo | Endpoint | Descripcion |
+|--------|----------|-------------|
+| GET | `/health` | Estado del servicio |
+| GET | `/predictions/heatmap` | Predicciones para heatmap |
+| GET | `/predictions/stats-by-state` | Scores por estado (coropleta) |
+| GET | `/predictions/nearby` | Predicciones cercanas a un punto |
+| GET | `/predictions/bbox` | Predicciones en bounding box |
+| GET | `/predictions/stats-by-city` | Stats por ciudad |
+| POST | `/predictions/predict` | Prediccion individual |
+| POST | `/predictions/explain` | Explicabilidad SHAP |
+| GET | `/predictions/drift-status` | Estado de drift del modelo |
+| POST | `/train` | Reentrenar modelo |
+| POST | `/tasks/train` | Entrenamiento async (Celery) |
+| POST | `/analytics/events` | Recepcion de eventos frontend |
+
+---
+
 ## Seguridad
 
 - **Autenticacion** — API Key (X-API-Key) en endpoints sensibles
 - **Autorizacion** — Row-Level Security (RLS) en todas las tablas
-- **Rate Limiting** — Redis sorted sets (1-100 req/min configurable)
+- **Rate Limiting** — Redis sorted sets (configurable por endpoint)
 - **Validacion** — Input sanitizer (XSS, SQL injection) en frontend y backend
 - **Audit** — Logs automaticos con triggers en tablas principales
-- **Headers** — HSTS, CSP, X-Frame-Options, CORS restringido
+- **CORS** — Origenes restringidos (solo plusvalia.iagentek.com.mx)
 - **Docker** — Multi-stage builds, usuario no-root (appuser:1001)
-
----
-
-## Documentacion
-
-| Documento | Descripcion |
-|-----------|-------------|
-| [INICIO_RAPIDO.md](geo-app/INICIO_RAPIDO.md) | Guia de 5 minutos |
-| [API Reference](geo-app/docs/api/API_REFERENCE.md) | Endpoints completos |
-| [Seguridad](geo-app/GUIA_SEGURIDAD_COMPLETA.md) | Detalles tecnicos |
-| [Despliegue](geo-app/INSTRUCCIONES_DESPLIEGUE.md) | Produccion paso a paso |
-| [Credential Rotation](geo-app/docs/security/credential-rotation.md) | Gestion de secretos |
-| [SLA/SLO](geo-app/docs/sla/SLA_SLO.md) | Objetivos de servicio |
-| [Runbook](geo-app/docs/runbooks/incident-response.md) | Respuesta a incidentes |
 
 ---
 
@@ -236,31 +233,31 @@ docker stack deploy -c plusvalia-ai.yaml plusvalia-ai
 ```
 plusvalia-ai/
 ├── geo-app/
-│   ├── app/                    # Angular SPA
-│   │   ├── Dockerfile          # Multi-stage build (Node + Nginx)
-│   │   ├── nginx.conf          # SPA routing, gzip, security headers
+│   ├── app/                        # Angular 16 SPA
+│   │   ├── Dockerfile              # Multi-stage (Node 18 + Nginx)
+│   │   ├── nginx.conf              # SPA routing, gzip, security headers
 │   │   └── src/app/
-│   │       ├── components/     # 8+ componentes UI (responsive)
+│   │       ├── components/         # 8 componentes UI (responsive)
 │   │       ├── pages/
-│   │       │   ├── mapa/       # Mapa interactivo principal
+│   │       │   ├── mapa/           # Mapa interactivo principal
 │   │       │   └── como-funciona/  # Pagina explicativa
-│   │       ├── services/       # API, Cache, ML, Supabase, Analytics
-│   │       └── validators/     # Input sanitizer, file validator
+│   │       ├── services/           # API, Cache, ML, Supabase, Analytics
+│   │       └── validators/         # Input sanitizer, file validator
 │   │
-│   ├── python_services/        # FastAPI backend
-│   │   ├── Dockerfile          # Multi-stage build (Python 3.11)
-│   │   ├── api/routers/        # predictions, training, stats, tasks
-│   │   ├── ml_model/           # LightGBM, XGBoost, Optuna, SHAP
-│   │   ├── middleware/         # Auth, rate limit, circuit breaker
-│   │   ├── scrapers/           # 8 scrapers gubernamentales
-│   │   ├── scripts/            # Data pipeline, enrichment
-│   │   └── tasks/              # Celery async tasks
+│   ├── python_services/            # FastAPI backend
+│   │   ├── Dockerfile              # Multi-stage (Python 3.11)
+│   │   ├── api/routers/            # predictions, training, stats, tasks
+│   │   ├── ml_model/               # LightGBM, XGBoost, Optuna, SHAP
+│   │   ├── middleware/             # Auth, rate limit, circuit breaker
+│   │   ├── scrapers/               # 8 scrapers gubernamentales
+│   │   ├── scripts/                # Data pipeline, enrichment
+│   │   └── tasks/                  # Celery async tasks
 │   │
-│   ├── plusvalia-ai.yaml       # Docker Swarm stack (6 servicios)
-│   ├── monitoring/             # Prometheus + Grafana + alertas
-│   ├── scripts/                # Backup, load test, rollback
-│   ├── scripts_sql/            # 22+ migrations SQL
-│   └── docs/                   # API, security, SLA, runbooks
+│   ├── plusvalia-ai.yaml           # Docker Swarm stack (6 servicios)
+│   ├── monitoring/                 # Prometheus + Grafana
+│   ├── scripts/                    # Backup, load test, rollback
+│   ├── scripts_sql/                # 22+ migrations SQL
+│   └── docs/                       # API, security, SLA, runbooks
 └── README.md
 ```
 
@@ -273,5 +270,5 @@ Todos los derechos reservados.
 ---
 
 <p align="center">
-  <sub>Desarrollado con Angular, FastAPI, LightGBM y datos reales del mercado inmobiliario mexicano.</sub>
+  <sub>Desarrollado por Samael Hernandez &mdash; Angular 16, FastAPI, LightGBM, Supabase, Docker Swarm.</sub>
 </p>
