@@ -5,8 +5,14 @@
     <div class="container-fluid map-container">
       <div class="row row-content">
       
+      <!-- Toggle mobile sidebar -->
+      <button class="mobile-toggle-btn d-md-none" (click)="mobileShowSidebar = !mobileShowSidebar"
+        [attr.aria-label]="mobileShowSidebar ? 'Ver mapa' : 'Ver panel'">
+        {{ mobileShowSidebar ? 'Ver Mapa' : 'Panel' }}
+      </button>
+
       <!-- Panel lateral izquierdo -->
-      <div class="col-md-3 p-0 d-flex flex-column" style="background:#f8fafc;border-right:1px solid #e2e8f0;height:calc(100vh - 70px);overflow-y:auto;">
+      <div class="col-md-3 p-0 d-flex flex-column sidebar-panel" [class.sidebar-hidden]="!mobileShowSidebar">
 
         <!-- Header -->
         <div class="d-flex align-items-center justify-content-between px-3 py-2" style="background:#04202C;flex-shrink:0;">
@@ -153,7 +159,7 @@
       </div>
 
     <!-- Área del mapa -->
-    <div class="col-md-9 p-0">
+    <div class="col-md-9 p-0 map-panel" [class.map-visible]="!mobileShowSidebar">
       <div id="map" class="h-100" role="application" aria-label="Mapa interactivo de análisis inmobiliario" tabindex="0">
         <!-- Buscador de direcciones (flotante) -->
         <app-address-search 

@@ -51,6 +51,7 @@ export class MapaComponent implements OnInit, OnDestroy { // clase del component
 
   // Single source of truth for map interaction mode
   mapMode: 'country' | 'state' = 'country';
+  mobileShowSidebar = false; // mobile: start with map visible
   private activeStateLayer: L.Path | null = null; // currently selected state layer in state mode
   private stateLabelsLayer!: L.LayerGroup; // capa de labels centrados en cada estado
   private stateScores: Map<string, { avg: number; count: number }> = new Map(); // scores promedio por estado
