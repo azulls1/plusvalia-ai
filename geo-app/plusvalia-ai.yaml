@@ -129,6 +129,8 @@ services:
       - LOG_LEVEL=INFO
     networks:
       - internal
+    healthcheck:
+      disable: true
     deploy:
       replicas: 1
       restart_policy:
@@ -155,6 +157,8 @@ services:
       - REDIS_URL=redis://redis:6379/0
     networks:
       - internal
+    healthcheck:
+      disable: true
     deploy:
       replicas: 1
       restart_policy:
@@ -171,9 +175,15 @@ services:
   flower:
     image: plusvalia-ai-backend:latest
     command: celery -A celery_app flower --port=5555 --broker=redis://redis:6379/0
+    env_file:
+      - ./python_services/.env
+    environment:
+      - REDIS_URL=redis://redis:6379/0
     networks:
       - internal
       - iagenteknet
+    healthcheck:
+      disable: true
     deploy:
       replicas: 1
       restart_policy:
