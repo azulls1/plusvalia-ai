@@ -247,26 +247,51 @@ h3::after {
 
 .mobile-toggle-btn {
   position: fixed;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
+  top: 14px;
+  left: 14px;
   z-index: 1100;
-  padding: 10px 28px;
-  border-radius: 24px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 12px;
   border: none;
   background: #04202C;
   color: #fff;
-  font-family: 'Sora', sans-serif;
-  font-weight: 700;
-  font-size: 0.85em;
-  box-shadow: 0 4px 20px rgba(4, 32, 44, 0.5);
+  box-shadow: 0 4px 16px rgba(4, 32, 44, 0.5);
   cursor: pointer;
   transition: all 0.2s ease;
-  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mobile-toggle-btn:active {
-  transform: translateX(-50%) scale(0.95);
+  transform: scale(0.92);
+}
+
+.mobile-toggle-open {
+  background: #DC2626;
+}
+
+.hamburger-icon {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 20px;
+}
+
+.hamburger-icon span {
+  display: block;
+  height: 2.5px;
+  width: 100%;
+  background: #fff;
+  border-radius: 2px;
+}
+
+.close-icon {
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 300;
 }
 
 @media (max-width: 767.98px) {
@@ -282,10 +307,12 @@ h3::after {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 85%;
+    max-width: 340px;
     height: 100vh !important;
     z-index: 1050;
     transition: transform 0.3s ease;
+    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
   }
 
   .sidebar-panel.sidebar-hidden {
@@ -307,12 +334,68 @@ h3::after {
   footer {
     display: none !important;
   }
+
+  /* Hide legend on mobile */
+  :host ::ng-deep .info.legend {
+    display: none !important;
+  }
+
+  /* Reposition Leaflet zoom controls - bottom left */
+  :host ::ng-deep .leaflet-top.leaflet-left {
+    top: auto !important;
+    bottom: 80px !important;
+    left: 10px !important;
+  }
+
+  /* Hide address search floating component on mobile (available via panel) */
+  :host ::ng-deep app-address-search .search-container {
+    top: 10px !important;
+    width: 70% !important;
+    left: auto !important;
+    right: 10px !important;
+    transform: none !important;
+  }
+
+  :host ::ng-deep app-address-search .search-box {
+    padding: 6px;
+  }
+
+  :host ::ng-deep app-address-search .search-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
+  :host ::ng-deep app-address-search .search-input {
+    font-size: 12px;
+  }
+
+  /* Compact advanced filters toggle on mobile */
+  :host ::ng-deep .filters-toggle-btn {
+    top: auto !important;
+    bottom: 80px !important;
+    left: auto !important;
+    right: 10px !important;
+    font-size: 12px;
+    padding: 5px 10px;
+  }
 }
 
 @media (min-width: 768px) {
   .mobile-toggle-btn {
     display: none !important;
   }
+}
+
+/* ─── Mobile Overlay ─── */
+.mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 1040;
+  animation: fadeIn 0.2s ease;
 }
 
 /* ─── Boton Como Funciona ─── */

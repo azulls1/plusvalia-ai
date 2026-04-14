@@ -7,9 +7,16 @@
       
       <!-- Toggle mobile sidebar -->
       <button class="mobile-toggle-btn d-md-none" (click)="mobileShowSidebar = !mobileShowSidebar"
-        [attr.aria-label]="mobileShowSidebar ? 'Ver mapa' : 'Ver panel'">
-        {{ mobileShowSidebar ? 'Ver Mapa' : 'Panel' }}
+        [class.mobile-toggle-open]="mobileShowSidebar"
+        [attr.aria-label]="mobileShowSidebar ? 'Cerrar panel' : 'Abrir panel'">
+        <span class="hamburger-icon" *ngIf="!mobileShowSidebar">
+          <span></span><span></span><span></span>
+        </span>
+        <span class="close-icon" *ngIf="mobileShowSidebar">&times;</span>
       </button>
+
+      <!-- Mobile overlay -->
+      <div class="mobile-overlay d-md-none" *ngIf="mobileShowSidebar" (click)="mobileShowSidebar = false"></div>
 
       <!-- Panel lateral izquierdo -->
       <div class="col-md-3 p-0 d-flex flex-column sidebar-panel" [class.sidebar-hidden]="!mobileShowSidebar">
