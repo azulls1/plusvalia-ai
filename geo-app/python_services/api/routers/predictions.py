@@ -378,9 +378,9 @@ async def get_nearby_predictions(
             .limit(limit)
             .execute()
         )
-    except Exception as e:  # Supabase client may raise various errors
-        logger.error(f"Error consultando predicciones: {e}")
-        raise HTTPException(status_code=500, detail="Error consultando predicciones")
+    except Exception as e:  # Supabase client may raise various errors (incl. 504 timeout)
+        logger.warning(f"Supabase timeout/error en nearby predictions: {e}")
+        return {"predictions": [], "count": 0, "center": {"lat": lat, "lon": lon}, "radius_km": radius_km}
 
     nearby = []
     if response.data:
