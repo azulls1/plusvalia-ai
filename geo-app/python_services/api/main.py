@@ -30,7 +30,8 @@ app = FastAPI(
 
 # CORS
 ALLOWED_ORIGINS = os.getenv(
-    "ALLOWED_ORIGINS", "http://localhost:4200,http://localhost:52130"
+    "ALLOWED_ORIGINS",
+    "http://localhost:4200,http://localhost:52130,https://plusvalia.iagentek.com.mx",
 ).split(",")
 
 app.add_middleware(
@@ -77,6 +78,17 @@ app.include_router(stats_router)
 app.include_router(predictions_router)
 app.include_router(training_router)
 app.include_router(tasks_router)
+
+
+# ==================== ANALYTICS ====================
+
+from fastapi import Request
+
+
+@app.post("/analytics/events", include_in_schema=False)
+async def analytics_events(request: Request):
+    """Receive frontend analytics events (fire-and-forget)."""
+    return {"status": "ok"}
 
 # ==================== STARTUP ====================
 

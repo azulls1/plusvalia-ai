@@ -8,6 +8,13 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/mapa/mapa.component').then(m => m.MapaComponent),
   },
+  {
+    path: 'como-funciona',
+    loadComponent: () =>
+      import('./pages/como-funciona/como-funciona.component').then(
+        m => m.ComoFuncionaComponent
+      ),
+  },
   { path: '**', redirectTo: '/mapa' },
 ];
 

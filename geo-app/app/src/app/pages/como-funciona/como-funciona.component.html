@@ -1,0 +1,338 @@
+<div class="page-wrapper">
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container d-flex align-items-center justify-content-between">
+      <a routerLink="/mapa" class="nav-brand">
+        <img src="assets/icons/logo-iagentek.webp" alt="Logo" class="nav-logo">
+        <div>
+          <div class="nav-title">IAInmobiliaria</div>
+          <div class="nav-subtitle">Plusvalia AI</div>
+        </div>
+      </a>
+      <a routerLink="/mapa" class="btn-back">
+        <span class="btn-back-icon">&#8592;</span> Ir al Mapa
+      </a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-badge">Plataforma de Analisis Inmobiliario</div>
+      <h1 class="hero-title">Como funciona<br><span class="hero-accent">Plusvalia AI</span></h1>
+      <p class="hero-desc">
+        Analizamos el mercado inmobiliario de Mexico con inteligencia artificial
+        para ayudarte a tomar mejores decisiones de inversion.
+      </p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-value">420K+</div>
+          <div class="hero-stat-label">Propiedades analizadas</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">4,027</div>
+          <div class="hero-stat-label">Ciudades</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">95%</div>
+          <div class="hero-stat-label">Precision del modelo</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">12</div>
+          <div class="hero-stat-label">Fuentes de datos</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Proceso en 3 pasos -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">El proceso en 3 pasos</h2>
+      <p class="section-desc">Desde la recoleccion de datos hasta la prediccion en tu pantalla.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Recoleccion de Datos</h3>
+            <p>
+              Nuestros scrapers automatizados recolectan datos de <strong>12 fuentes</strong> distintas:
+              registros catastrales, listings inmobiliarios, datos del censo INEGI, indices de precios
+              de vivienda (SHF), estadisticas de criminalidad (SESNSP), riesgo natural (CENAPRED),
+              desarrollo urbano (SEDATU) y mas.
+            </p>
+            <div class="step-tags">
+              <span class="tag">Properati</span>
+              <span class="tag">CDMX Catastro</span>
+              <span class="tag">INEGI</span>
+              <span class="tag">SHF</span>
+              <span class="tag">SESNSP</span>
+              <span class="tag">CENAPRED</span>
+              <span class="tag">SEDATU</span>
+              <span class="tag">CONAPO</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Entrenamiento del Modelo</h3>
+            <p>
+              Usamos un <strong>ensemble de Machine Learning</strong> que combina LightGBM y XGBoost,
+              optimizado con Optuna. El modelo aprende de mas de 30 variables: precio por metro cuadrado,
+              ubicacion geografica, amenidades cercanas, datos demograficos, indices de criminalidad,
+              riesgo natural y tendencias de mercado.
+            </p>
+            <div class="step-tags">
+              <span class="tag">LightGBM</span>
+              <span class="tag">XGBoost</span>
+              <span class="tag">Optuna</span>
+              <span class="tag">SHAP</span>
+              <span class="tag">30+ features</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Prediccion y Visualizacion</h3>
+            <p>
+              El modelo genera predicciones de <strong>plusvalia</strong> (apreciacion futura) para cada
+              zona. Los resultados se visualizan en un mapa interactivo con heatmaps, donde puedes
+              explorar por ciudad, filtrar por score y ver la explicacion detallada de cada prediccion.
+            </p>
+            <div class="step-tags">
+              <span class="tag">Mapa interactivo</span>
+              <span class="tag">Heatmap</span>
+              <span class="tag">Score 0-100</span>
+              <span class="tag">Explicabilidad SHAP</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Que es el Score de Plusvalia -->
+  <section class="section section-alt">
+    <div class="container">
+      <h2 class="section-title">Que es el Score de Plusvalia?</h2>
+      <p class="section-desc">
+        Cada zona recibe un puntaje del 0 al 100 que indica su potencial de apreciacion.
+      </p>
+
+      <div class="score-grid">
+        <div class="score-card score-low">
+          <div class="score-range">0 - 30</div>
+          <div class="score-label">Bajo</div>
+          <p>Zonas con menor potencial de apreciacion. Pueden ser areas rurales, con baja demanda o factores de riesgo elevados.</p>
+        </div>
+        <div class="score-card score-mid">
+          <div class="score-range">31 - 60</div>
+          <div class="score-label">Moderado</div>
+          <p>Zonas estables con potencial de crecimiento gradual. Buenas para inversion a mediano plazo con riesgo controlado.</p>
+        </div>
+        <div class="score-card score-high">
+          <div class="score-range">61 - 80</div>
+          <div class="score-label">Alto</div>
+          <p>Zonas con fuerte potencial de apreciacion. Combinan buena infraestructura, demanda creciente y desarrollo urbano.</p>
+        </div>
+        <div class="score-card score-top">
+          <div class="score-range">81 - 100</div>
+          <div class="score-label">Muy Alto</div>
+          <p>Las zonas con mayor potencial del pais. Confluencia de todos los factores positivos: ubicacion, servicios, seguridad y tendencia.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Variables que analiza -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Que variables analiza?</h2>
+      <p class="section-desc">El modelo evalua mas de 30 variables agrupadas en 6 categorias.</p>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">&#127968;</div>
+          <h4>Mercado Inmobiliario</h4>
+          <ul>
+            <li>Precio por metro cuadrado</li>
+            <li>Tendencia de precios historica</li>
+            <li>Volumen de transacciones</li>
+            <li>Tipo de propiedad</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#128205;</div>
+          <h4>Ubicacion</h4>
+          <ul>
+            <li>Coordenadas geograficas</li>
+            <li>Indexacion hexagonal H3</li>
+            <li>Distancia a centros urbanos</li>
+            <li>Accesibilidad vial</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#128200;</div>
+          <h4>Demografia</h4>
+          <ul>
+            <li>Densidad poblacional (INEGI)</li>
+            <li>Indice de marginacion (CONAPO)</li>
+            <li>Crecimiento poblacional</li>
+            <li>Nivel socioeconomico</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#127963;</div>
+          <h4>Infraestructura</h4>
+          <ul>
+            <li>Escuelas y hospitales cercanos</li>
+            <li>Comercios y servicios (DENUE)</li>
+            <li>Transporte publico</li>
+            <li>Desarrollo urbano (SEDATU)</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#128274;</div>
+          <h4>Seguridad</h4>
+          <ul>
+            <li>Indice de criminalidad (SESNSP)</li>
+            <li>Tendencia delictiva</li>
+            <li>Tipo de delitos en la zona</li>
+            <li>Percepcion de seguridad</li>
+          </ul>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">&#127758;</div>
+          <h4>Riesgo y Entorno</h4>
+          <ul>
+            <li>Riesgo sismico (CENAPRED)</li>
+            <li>Riesgo de inundacion</li>
+            <li>Vegetacion y areas verdes</li>
+            <li>Indices climaticos</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Como usar la plataforma -->
+  <section class="section section-alt">
+    <div class="container">
+      <h2 class="section-title">Como usar la plataforma</h2>
+      <p class="section-desc">Guia rapida para sacarle el maximo provecho.</p>
+
+      <div class="guide-grid">
+        <div class="guide-item">
+          <div class="guide-number">1</div>
+          <h4>Explora el mapa</h4>
+          <p>Navega por Mexico y observa el heatmap de colores. Las zonas <strong>rojas/naranjas</strong> tienen mayor potencial de plusvalia, las <strong>azules/verdes</strong> menor.</p>
+        </div>
+        <div class="guide-item">
+          <div class="guide-number">2</div>
+          <h4>Filtra por estado o ciudad</h4>
+          <p>Usa el panel lateral para seleccionar un estado especifico. El mapa hara zoom automatico y mostrara el detalle de esa region.</p>
+        </div>
+        <div class="guide-item">
+          <div class="guide-number">3</div>
+          <h4>Click en una prediccion</h4>
+          <p>Haz click en cualquier punto del mapa para ver el detalle: precio predicho por m², score de plusvalia, y los factores que influyen.</p>
+        </div>
+        <div class="guide-item">
+          <div class="guide-number">4</div>
+          <h4>Usa los filtros avanzados</h4>
+          <p>Filtra por rango de score, precio minimo/maximo, tipo de zona o amenidades cercanas para encontrar exactamente lo que buscas.</p>
+        </div>
+        <div class="guide-item">
+          <div class="guide-number">5</div>
+          <h4>Consulta al asistente AI</h4>
+          <p>Usa el chatbot <strong>Favier AI</strong> para hacer preguntas en lenguaje natural sobre el mercado inmobiliario de cualquier zona.</p>
+        </div>
+        <div class="guide-item">
+          <div class="guide-number">6</div>
+          <h4>Alterna vistas</h4>
+          <p>Cambia entre vista de <strong>Plusvalia</strong> (potencial de apreciacion) y <strong>Precios/m²</strong> (valores actuales) con los botones del panel.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stack tecnologico -->
+  <section class="section">
+    <div class="container">
+      <h2 class="section-title">Tecnologia detras</h2>
+      <p class="section-desc">Stack moderno, seguro y escalable.</p>
+
+      <div class="tech-grid">
+        <div class="tech-group">
+          <h4 class="tech-group-title">Frontend</h4>
+          <div class="tech-tags">
+            <span class="tech-tag">Angular</span>
+            <span class="tech-tag">TypeScript</span>
+            <span class="tech-tag">Leaflet</span>
+            <span class="tech-tag">Tailwind CSS</span>
+          </div>
+        </div>
+        <div class="tech-group">
+          <h4 class="tech-group-title">Backend</h4>
+          <div class="tech-tags">
+            <span class="tech-tag">FastAPI</span>
+            <span class="tech-tag">Python</span>
+            <span class="tech-tag">Celery</span>
+            <span class="tech-tag">Redis</span>
+          </div>
+        </div>
+        <div class="tech-group">
+          <h4 class="tech-group-title">Machine Learning</h4>
+          <div class="tech-tags">
+            <span class="tech-tag">LightGBM</span>
+            <span class="tech-tag">XGBoost</span>
+            <span class="tech-tag">Optuna</span>
+            <span class="tech-tag">SHAP</span>
+            <span class="tech-tag">scikit-learn</span>
+          </div>
+        </div>
+        <div class="tech-group">
+          <h4 class="tech-group-title">Infraestructura</h4>
+          <div class="tech-tags">
+            <span class="tech-tag">Docker Swarm</span>
+            <span class="tech-tag">Traefik</span>
+            <span class="tech-tag">PostgreSQL</span>
+            <span class="tech-tag">Supabase</span>
+            <span class="tech-tag">Prometheus</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section-cta">
+    <div class="container text-center">
+      <h2 class="cta-title">Listo para explorar?</h2>
+      <p class="cta-desc">Descubre el potencial de plusvalia en cualquier zona de Mexico.</p>
+      <a routerLink="/mapa" class="cta-btn">Abrir el Mapa</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="page-footer">
+    <div class="container">
+      <div class="footer-row">
+        <div class="footer-brand">
+          <img src="assets/icons/logo_ia_withe.webp" alt="IAInmobiliaria" class="footer-logo">
+          <span class="footer-name">IAInmobiliaria</span>
+        </div>
+        <div class="footer-copy">
+          &copy; {{ currentYear }} IAInmobiliaria by IAgentek. Todos los derechos reservados.
+        </div>
+      </div>
+    </div>
+  </footer>
+
+</div>

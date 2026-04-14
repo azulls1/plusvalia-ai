@@ -2,6 +2,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core'; // decoradores de Angular
 import { CommonModule } from '@angular/common'; // módulo común para directivas básicas
 import { FormsModule } from '@angular/forms'; // módulo para ngModel y formularios
+import { RouterModule } from '@angular/router'; // módulo de rutas para routerLink
 import * as L from 'leaflet'; // librería Leaflet para mapas
 import './leaflet-extensions'; // importa extensiones de Leaflet (heat y markercluster)
 import { ApiService } from '../../services/api.service'; // servicio API
@@ -34,7 +35,7 @@ const MEXICAN_STATES: string[] = [
 @Component({ // decorador del componente
   selector: 'app-mapa', // selector HTML
   standalone: true, // componente standalone
-  imports: [CommonModule, FormsModule, FiltersPanelComponent, AddressSearchComponent, AdvancedFiltersComponent, FileUploadComponent], // importa componentes y módulos
+  imports: [CommonModule, FormsModule, RouterModule, FiltersPanelComponent, AddressSearchComponent, AdvancedFiltersComponent, FileUploadComponent], // importa componentes y módulos
   templateUrl: './mapa.component.html', // ruta del template HTML
   styleUrls: ['./mapa.component.css'] // ruta de estilos CSS
 })
