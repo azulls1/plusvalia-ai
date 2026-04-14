@@ -269,10 +269,6 @@ h3::after {
   transform: scale(0.92);
 }
 
-.mobile-toggle-open {
-  background: #DC2626;
-}
-
 .hamburger-icon {
   display: flex;
   flex-direction: column;
@@ -288,10 +284,26 @@ h3::after {
   border-radius: 2px;
 }
 
-.close-icon {
-  font-size: 24px;
+/* Close button inside sidebar header (mobile only) */
+.sidebar-close-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 20px;
   line-height: 1;
-  font-weight: 300;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 @media (max-width: 767.98px) {
@@ -347,37 +359,6 @@ h3::after {
     left: 10px !important;
   }
 
-  /* Hide address search floating component on mobile (available via panel) */
-  :host ::ng-deep app-address-search .search-container {
-    top: 10px !important;
-    width: 70% !important;
-    left: auto !important;
-    right: 10px !important;
-    transform: none !important;
-  }
-
-  :host ::ng-deep app-address-search .search-box {
-    padding: 6px;
-  }
-
-  :host ::ng-deep app-address-search .search-btn {
-    padding: 8px 12px;
-    font-size: 12px;
-  }
-
-  :host ::ng-deep app-address-search .search-input {
-    font-size: 12px;
-  }
-
-  /* Compact advanced filters toggle on mobile */
-  :host ::ng-deep .filters-toggle-btn {
-    top: auto !important;
-    bottom: 80px !important;
-    left: auto !important;
-    right: 10px !important;
-    font-size: 12px;
-    padding: 5px 10px;
-  }
 }
 
 @media (min-width: 768px) {

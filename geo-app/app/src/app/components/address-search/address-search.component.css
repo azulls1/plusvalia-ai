@@ -244,8 +244,35 @@
 .results-list::-webkit-scrollbar-thumb { background: rgba(91, 112, 101, 0.3); border-radius: 9999px; }
 
 /* Responsive */
-@media (max-width: 768px) {
-  .search-container { width: 95%; }
-  .search-box { flex-direction: column; padding: 10px; }
-  .search-btn { width: 100%; justify-content: center; }
+@media (max-width: 767.98px) {
+  .search-container {
+    width: auto !important;
+    max-width: none !important;
+    top: 10px !important;
+    left: 62px !important;
+    right: 10px !important;
+    transform: none !important;
+  }
+
+  .search-box {
+    padding: 6px;
+    gap: 6px;
+  }
+
+  .search-input-wrapper {
+    padding: 6px 10px;
+  }
+
+  .search-input {
+    font-size: 13px;
+  }
+
+  .search-btn {
+    padding: 8px 14px;
+    font-size: 12px;
+  }
+
+  .search-results {
+    max-height: 300px;
+  }
 }

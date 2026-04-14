@@ -5,14 +5,10 @@
     <div class="container-fluid map-container">
       <div class="row row-content">
       
-      <!-- Toggle mobile sidebar -->
-      <button class="mobile-toggle-btn d-md-none" (click)="mobileShowSidebar = !mobileShowSidebar"
-        [class.mobile-toggle-open]="mobileShowSidebar"
-        [attr.aria-label]="mobileShowSidebar ? 'Cerrar panel' : 'Abrir panel'">
-        <span class="hamburger-icon" *ngIf="!mobileShowSidebar">
-          <span></span><span></span><span></span>
-        </span>
-        <span class="close-icon" *ngIf="mobileShowSidebar">&times;</span>
+      <!-- Toggle mobile sidebar (only hamburger, never X) -->
+      <button class="mobile-toggle-btn d-md-none" *ngIf="!mobileShowSidebar"
+        (click)="mobileShowSidebar = true" aria-label="Abrir panel">
+        <span class="hamburger-icon"><span></span><span></span><span></span></span>
       </button>
 
       <!-- Mobile overlay -->
@@ -30,7 +26,10 @@
               <div style="font-size:0.6em;color:#9EADA3;">Analisis de Mercado con IA</div>
             </div>
           </div>
-          <a routerLink="/como-funciona" class="btn-como-funciona">? Como Funciona</a>
+          <div class="d-flex align-items-center gap-2">
+            <a routerLink="/como-funciona" class="btn-como-funciona">? Como Funciona</a>
+            <button class="sidebar-close-btn d-md-none" (click)="mobileShowSidebar = false" aria-label="Cerrar panel">&times;</button>
+          </div>
         </div>
 
         <!-- Alerta -->
