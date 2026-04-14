@@ -306,7 +306,7 @@ h3::after {
   background: rgba(255, 255, 255, 0.3);
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 991.98px) {
   .map-container {
     height: 100vh !important;
   }
@@ -361,7 +361,7 @@ h3::after {
 
 }
 
-@media (min-width: 768px) {
+@media (min-width: 992px) {
   .mobile-toggle-btn {
     display: none !important;
   }

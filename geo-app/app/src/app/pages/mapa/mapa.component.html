@@ -6,16 +6,16 @@
       <div class="row row-content">
       
       <!-- Toggle mobile sidebar (only hamburger, never X) -->
-      <button class="mobile-toggle-btn d-md-none" *ngIf="!mobileShowSidebar"
+      <button class="mobile-toggle-btn d-lg-none" *ngIf="!mobileShowSidebar"
         (click)="mobileShowSidebar = true" aria-label="Abrir panel">
         <span class="hamburger-icon"><span></span><span></span><span></span></span>
       </button>
 
       <!-- Mobile overlay -->
-      <div class="mobile-overlay d-md-none" *ngIf="mobileShowSidebar" (click)="mobileShowSidebar = false"></div>
+      <div class="mobile-overlay d-lg-none" *ngIf="mobileShowSidebar" (click)="mobileShowSidebar = false"></div>
 
       <!-- Panel lateral izquierdo -->
-      <div class="col-md-3 p-0 d-flex flex-column sidebar-panel" [class.sidebar-hidden]="!mobileShowSidebar">
+      <div class="col-lg-3 p-0 d-flex flex-column sidebar-panel" [class.sidebar-hidden]="!mobileShowSidebar">
 
         <!-- Header -->
         <div class="d-flex align-items-center justify-content-between px-3 py-2" style="background:#04202C;flex-shrink:0;">
@@ -28,7 +28,7 @@
           </div>
           <div class="d-flex align-items-center gap-2">
             <a routerLink="/como-funciona" class="btn-como-funciona">? Como Funciona</a>
-            <button class="sidebar-close-btn d-md-none" (click)="mobileShowSidebar = false" aria-label="Cerrar panel">&times;</button>
+            <button class="sidebar-close-btn d-lg-none" (click)="mobileShowSidebar = false" aria-label="Cerrar panel">&times;</button>
           </div>
         </div>
 
@@ -165,7 +165,7 @@
       </div>
 
     <!-- Área del mapa -->
-    <div class="col-md-9 p-0 map-panel" [class.map-visible]="!mobileShowSidebar">
+    <div class="col-lg-9 p-0 map-panel" [class.map-visible]="!mobileShowSidebar">
       <div id="map" class="h-100" role="application" aria-label="Mapa interactivo de análisis inmobiliario" tabindex="0">
         <!-- Buscador de direcciones (flotante) -->
         <app-address-search 
@@ -193,7 +193,7 @@
       <div class="row py-4">
 
         <!-- Columna 1: Marca -->
-        <div class="col-md-3 mb-3 mb-md-0">
+        <div class="col-lg-3 mb-3 mb-md-0">
           <div class="d-flex align-items-center mb-2">
             <img src="assets/icons/logo_ia_withe.webp" alt="IAInmobiliaria Logo" style="height: 36px; width: auto;" class="me-2">
             <h6 class="mb-0 fw-bold" style="font-family: 'Sora', sans-serif;">IAInmobiliaria</h6>
@@ -204,7 +204,7 @@
         </div>
 
         <!-- Columna 2: Legal -->
-        <div class="col-md-3 mb-3 mb-md-0">
+        <div class="col-lg-3 mb-3 mb-md-0">
           <h6 class="fw-bold mb-2" style="font-size: 0.85em; color: #C9D1C8;">Legal</h6>
           <ul class="list-unstyled mb-0" style="font-size: 0.8em;">
             <li class="mb-1"><a href="javascript:void(0)" class="footer-link">Términos y Condiciones</a></li>
@@ -215,7 +215,7 @@
         </div>
 
         <!-- Columna 3: Tecnologías -->
-        <div class="col-md-3 mb-3 mb-md-0">
+        <div class="col-lg-3 mb-3 mb-md-0">
           <h6 class="fw-bold mb-2" style="font-size: 0.85em; color: #C9D1C8;">Tecnologías</h6>
           <div class="d-flex flex-wrap gap-1">
             <span class="badge">Angular</span>
@@ -233,7 +233,7 @@
         </div>
 
         <!-- Columna 4: Contacto -->
-        <div class="col-md-3">
+        <div class="col-lg-3">
           <h6 class="fw-bold mb-2" style="font-size: 0.85em; color: #C9D1C8;">Contacto</h6>
           <ul class="list-unstyled mb-0" style="font-size: 0.8em;">
             <li class="mb-1"><a href="https://iagentek.com.mx" target="_blank" rel="noopener" class="footer-link">iagentek.com.mx</a></li>
